@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Guide: Number Bases, Two's Complement, Instructions, Bit Operations</title>
+<meta name="description" content="Terms, base conversion, two's complement, shifts, bitwise operations, machine instructions, addressing modes, and a practice game" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f5fb; --surface:#ffffff; --surface-2:#efecf7; --ink:#211f2e; --ink-muted:#615d78;
+    --border:#e0dced; --accent:#5b3fa0; --accent-soft:#ece6fa; --good:#1a7a5e; --good-soft:#e0f3ec;
+    --warn:#a13a3a; --warn-soft:#f6e3e3;
+    --shadow: 0 1px 2px rgba(33,31,46,0.06), 0 8px 24px -12px rgba(33,31,46,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151220; --surface:#1d1930; --surface-2:#241f3a; --ink:#eae7f5; --ink-muted:#a49dc2;
+      --border:#332c54; --accent:#a68cf0; --accent-soft:#2c2450; --good:#5cc2a4; --good-soft:#173029;
+      --warn:#e0857a; --warn-soft:#3a2024;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.55;padding-inline:20px;}
+  .wrap{max-width:800px;margin:0 auto;padding-block:28px 60px;}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:clamp(1.5rem,4vw,2rem);margin:0 0 6px;}
+  h2{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:1.35rem;margin:36px 0 10px;padding-top:6px;border-top:1px solid var(--border);}
+  h3{font-size:1.02rem;margin:20px 0 6px;}
+  p{margin:0 0 12px;}
+  .lede{color:var(--ink-muted);font-size:.98rem;margin:0 0 18px;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--surface-2);padding:.1em .4em;border-radius:4px;font-size:.9em;}
+  pre{font-family:'IBM Plex Mono',monospace;background:var(--surface-2);padding:12px 14px;border-radius:8px;font-size:.88rem;overflow-x:auto;margin:0 0 12px;}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:14px;}
+  table{border-collapse:collapse;width:100%;background:var(--surface);}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:top;}
+  thead th{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-muted);background:var(--surface-2);}
+  tbody tr:last-child td{border-bottom:none;}
+
+  .defs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:14px;}
+  .term{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:11px 13px;box-shadow:var(--shadow);}
+  .term b{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:.9rem;display:block;margin-bottom:3px;}
+  .term span{font-size:.88rem;}
+
+  .problem{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .problem .k{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--good);display:block;margin-bottom:6px;}
+  details{margin-top:10px;}
+  details summary{cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--accent);}
+  details[open] summary{margin-bottom:8px;}
+  .work{font-family:'IBM Plex Mono',monospace;font-size:.86rem;background:var(--good-soft);border-radius:8px;padding:10px 12px;white-space:pre-wrap;line-height:1.6;}
+
+  .callout{border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.92rem;}
+  .anim-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .anim-wrap svg{width:100%;height:auto;display:block;}
+  .anim-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}
+  .anim-controls button{font-family:'IBM Plex Mono',monospace;font-size:.8rem;padding:6px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .anim-controls button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .anim-controls button:disabled{opacity:.4;cursor:default;}
+  .anim-desc{font-size:.92rem;margin-top:10px;min-height:2.6em;}
+  .anim-count{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--ink-muted);}
+  .flow{stroke-dasharray:200;stroke-dashoffset:200;opacity:0;transition:stroke-dashoffset .8s ease,opacity .2s ease;}
+  .flow.on{stroke-dashoffset:0;opacity:1;}
+  .pulse-box{transition:fill .35s ease,stroke .35s ease;}
+  .pulse-box.hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.6;}
+  .hcode{font-family:'IBM Plex Mono',monospace;font-size:.85rem;background:var(--surface-2);border-radius:8px;padding:8px 6px;line-height:1.75;}
+  .hcode div{padding:0 8px;border-radius:4px;white-space:pre;}
+  .hcode div.cur{background:var(--accent);color:#fff;}
+  .hcode div.done{color:var(--ink-muted);}
+  .hchain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;}
+  .hbox{font-family:'IBM Plex Mono',monospace;font-size:.95rem;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-muted);min-width:56px;text-align:center;transition:background .3s ease,color .3s ease;}
+  .hbox.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);}
+  .hbox.cur{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .harrow{color:var(--ink-muted);font-family:'IBM Plex Mono',monospace;}
+  .hregs{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .hreg{font-family:'IBM Plex Mono',monospace;font-size:.9rem;background:var(--surface-2);border-radius:8px;padding:8px 12px;}
+  .hreg b{display:block;color:var(--ink-muted);font-weight:500;font-size:.75rem;}
+  .hreg.alu{border:1px dashed var(--accent);background:var(--accent-soft);}
+  .hchip{position:absolute;transform:translate(-50%,-50%);background:var(--accent);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:.8rem;padding:3px 9px;border-radius:999px;pointer-events:none;z-index:2;white-space:nowrap;transition:left .6s ease,top .6s ease,opacity .3s ease;}
+  .hop{font-size:.93rem;min-height:2.6em;margin-top:10px;}
+  .gtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink-muted);margin-bottom:10px;}
+  .gq{font-size:1rem;margin-bottom:12px;}
+  .gopts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .gopts button{font-family:'IBM Plex Mono',monospace;font-size:.95rem;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .gopts button:disabled{cursor:default;}
+  .gopts button.right{background:var(--good-soft);border-color:var(--good);}
+  .gopts button.wrong{background:var(--warn-soft);border-color:var(--warn);}
+  .gwhy{min-height:2.6em;margin-top:12px;font-size:.92rem;}
+  .gctl{display:flex;gap:10px;margin-top:10px;}
+  .gctl button{font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .gctl button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .gctl button:disabled{opacity:.4;cursor:default;}
+  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:14px;}
+  .links a{display:block;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--accent);text-decoration:none;font-size:.9rem;}
+  .links a span{display:block;color:var(--ink-muted);font-size:.82rem;}
+  @media (max-width:520px){.gopts{grid-template-columns:1fr;}}
+  footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--border);font-size:.82rem;color:var(--ink-muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Study Guide: Number Bases, Two&rsquo;s Complement, Instructions &amp; Bit Operations</h1>
+  <p class="lede">Topics: writing numbers in different bases, two&rsquo;s complement for signed values, shifts and bitwise operations, what a machine instruction is made of, and the ways an instruction can locate its operands. The practice game at the end covers everything on this page.</p>
+
+  <!-- ===== TERMS ===== -->
+  <h2>Key terms</h2>
+  <div class="defs">
+    <div class="term"><b>Base (radix)</b><span>The number of distinct digits a positional system uses. Base 10 uses 0&ndash;9; base 2 uses 0&ndash;1; base 5 uses 0&ndash;4.</span></div>
+    <div class="term"><b>Positional notation</b><span>Each digit's value depends on its position: digit &times; base<sup>position</sup>, counting positions from 0 on the right.</span></div>
+    <div class="term"><b>Machine instruction</b><span>A binary-encoded command the CPU can execute directly, made of an opcode and zero or more operands.</span></div>
+    <div class="term"><b>Opcode</b><span>The part of an instruction that says <em>what</em> operation to perform (addu, lw, beq, &hellip;).</span></div>
+    <div class="term"><b>Operand</b><span>The part that says <em>what to operate on</em> &mdash; a register, a memory location, or a constant.</span></div>
+    <div class="term"><b>Addressing mode</b><span>The rule an instruction uses to figure out where an operand lives: in the instruction itself, in a register, in memory, etc.</span></div>
+    <div class="term"><b>Effective address</b><span>The final memory address an instruction actually accesses, after its addressing mode has been applied.</span></div>
+    <div class="term"><b>Program counter (PC)</b><span>The register holding the address of the next instruction to fetch.</span></div>
+  </div>
+
+  <!-- ===== NUMBER BASES ===== -->
+  <h2>Converting between bases</h2>
+  <p>To read a number in any base, multiply each digit by that base raised to its position, then add. To go <em>from</em> base 10 <em>to</em> another base, repeatedly divide by the target base and collect remainders, reading them bottom-up.</p>
+
+  <div class="problem">
+    <span class="k">Problem 1 &middot; base 5 &rarr; base 10 &rarr; base 2</span>
+    <p>Convert <code>234<sub>5</sub></code> to base 10, then convert that result to base 2.</p>
+    <details>
+      <summary>Show worked solution</summary>
+      <div class="work">Step 1 (base 5 &rarr; base 10):
+  234<sub>5</sub> = 2&middot;5&sup2; + 3&middot;5&sup1; + 4&middot;5&sup0;
+                = 2&middot;25 + 3&middot;5 + 4&middot;1
+                = 50 + 15 + 4 = 69<sub>10</sub>
+
+Step 2 (base 10 &rarr; base 2), repeated division by 2:
+  69 &divide; 2 = 34 remainder 1
+  34 &divide; 2 = 17 remainder 0
+  17 &divide; 2 =  8 remainder 1
+   8 &divide; 2 =  4 remainder 0
+   4 &divide; 2 =  2 remainder 0
+   2 &divide; 2 =  1 remainder 0
+   1 &divide; 2 =  0 remainder 1
+
+Read remainders bottom-up:  1000101<sub>2</sub>
+Check: 64 + 4 + 1 = 69 &check;</div>
+    </details>
+  </div>
+
+  <div class="problem">
+    <span class="k">Problem 2 &middot; direct base 5 &rarr; base 2</span>
+    <p>Convert <code>234<sub>5</sub></code> directly to base 2 &mdash; without going through base 10 as an intermediate answer.</p>
+    <details>
+      <summary>Show worked solution</summary>
+      <div class="work">Divide the base-5 number by 2 <em>in base 5</em> each time. The remainder is the next binary digit (least significant first):
+
+  234<sub>5</sub> &divide; 2 = 114<sub>5</sub> remainder 1     (bit 0 = 1)
+  114<sub>5</sub> &divide; 2 =  32<sub>5</sub> remainder 0     (bit 1 = 0)
+   32<sub>5</sub> &divide; 2 =  13<sub>5</sub> remainder 1     (bit 2 = 1)
+   13<sub>5</sub> &divide; 2 =   4<sub>5</sub> remainder 0     (bit 3 = 0)
+    4<sub>5</sub> &divide; 2 =   2<sub>5</sub> remainder 0     (bit 4 = 0)
+    2<sub>5</sub> &divide; 2 =   1<sub>5</sub> remainder 0     (bit 5 = 0)
+    1<sub>5</sub> &divide; 2 =   0<sub>5</sub> remainder 1     (bit 6 = 1)
+
+Read bits bottom-up:  1000101<sub>2</sub>  (same answer as Problem 1)</div>
+      <p style="margin-top:10px;font-size:.88rem;color:var(--ink-muted);">Note: base 5 isn&rsquo;t a power of 2, so there&rsquo;s no shortcut like grouping binary digits in threes for octal. Direct conversion here still means doing arithmetic in base 5 &mdash; the value never changes, only how it&rsquo;s written.</p>
+    </details>
+  </div>
+
+  <!-- ===== BASE-5 BLOCKS ===== -->
+  <h3>Base-5 blocks: see the number</h3>
+  <p>Each place value is a bundle of smaller pieces. In base 5, a <strong>unit</strong> is 1, a <strong>strip</strong> is 5 units, a <strong>flat</strong> is 5 strips (25 units), and a <strong>cube</strong> is 5 flats (125 units). Each place can hold at most 4 pieces before it rolls over into the next place up, just like base 10 holds at most 9.</p>
+
+  <div class="problem">
+    <span class="k">Build it &middot; base-5 blocks</span>
+    <p>Start with <code>234<sub>5</sub></code> (2 flats, 3 strips, 4 units). Use the buttons to change the blocks and watch both numbers update.</p>
+    <div id="blockBuilder" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
+      <svg id="blockSvg" viewBox="0 0 420 240" style="width:100%;height:auto;display:block;"></svg>
+      <div id="blockControls" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;"></div>
+      <div id="blockReadout" style="font-family:'IBM Plex Mono',monospace;font-size:.92rem;margin-top:10px;text-align:center;"></div>
+    </div>
+  </div>
+
+  <!-- ===== MACHINE INSTRUCTIONS ===== -->
+  <h2>Machine instructions</h2>
+  <p>A machine instruction is a fixed binary pattern the CPU decodes. Its basic parts:</p>
+  <pre>addu $10, $9, $8   (R-type, 32 bits)
++--------+-------+-------+-------+-------+--------+
+| opcode |  rs   |  rt   |  rd   | shamt | funct  |
+| 000000 | 01001 | 01000 | 01010 | 00000 | 100001 |
++--------+-------+-------+-------+-------+--------+
+   6        5       5       5       5        6  bits
+rs = $9 (source 1), rt = $8 (source 2), rd = $10 (destination)</pre>
+  <p>Instructions with a constant, such as <code>addi</code>, use the I-type layout: opcode, rs, rt, then a 16-bit immediate in place of rd, shamt, and funct.</p>
+  <p>The CPU runs every instruction through the same <strong>fetch &rarr; increment &rarr; execute</strong> cycle: fetch the instruction at the address in the PC, increment the PC so it points to the next instruction, then execute the instruction (decoding its opcode and operands as part of that step). A jump changes the PC during execute instead of letting it advance by one instruction.</p>
+
+  <h3>Field positions and register names (MIPS green card)</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Format</th><th>opcode 31&ndash;26</th><th>rs 25&ndash;21</th><th>rt 20&ndash;16</th><th>rd 15&ndash;11</th><th>shamt 10&ndash;6</th><th>funct 5&ndash;0</th></tr></thead>
+    <tbody>
+      <tr><td>R-type</td><td>opcode</td><td>rs</td><td>rt</td><td>rd</td><td>shamt</td><td>funct</td></tr>
+      <tr><td>I-type</td><td>opcode</td><td>rs</td><td>rt</td><td colspan="3">immediate, bits 15&ndash;0</td></tr>
+      <tr><td>J-type</td><td>opcode</td><td colspan="5">address, bits 25&ndash;0</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Register</th><th>Number</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>$zero</td><td>0</td><td>always 0</td></tr>
+      <tr><td>$at</td><td>1</td><td>assembler temporary</td></tr>
+      <tr><td>$v0&ndash;$v1</td><td>2&ndash;3</td><td>return values</td></tr>
+      <tr><td>$a0&ndash;$a3</td><td>4&ndash;7</td><td>arguments</td></tr>
+      <tr><td>$t0&ndash;$t7</td><td>8&ndash;15</td><td>temporaries</td></tr>
+      <tr><td>$s0&ndash;$s7</td><td>16&ndash;23</td><td>saved registers</td></tr>
+      <tr><td>$t8&ndash;$t9</td><td>24&ndash;25</td><td>temporaries</td></tr>
+      <tr><td>$k0&ndash;$k1</td><td>26&ndash;27</td><td>kernel</td></tr>
+      <tr><td>$gp</td><td>28</td><td>global pointer</td></tr>
+      <tr><td>$sp</td><td>29</td><td>stack pointer</td></tr>
+      <tr><td>$fp</td><td>30</td><td>frame pointer</td></tr>
+      <tr><td>$ra</td><td>31</td><td>return address</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Watch the cycle</h3>
+  <div class="anim-wrap">
+    <svg viewBox="0 0 600 190">
+      <defs><marker id="fdeArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-muted)"/></marker></defs>
+      <rect id="fdeBox0" class="pulse-box" x="10" y="60" width="130" height="60" rx="10" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text x="75" y="85" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink)">FETCH</text>
+      <text x="75" y="104" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)">PC &rarr; memory &rarr; IR</text>
+      <rect id="fdeBox1" class="pulse-box" x="160" y="60" width="130" height="60" rx="10" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text x="225" y="85" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink)">INCREMENT</text>
+      <text x="225" y="104" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)">PC += instruction size</text>
+      <rect id="fdeBox2" class="pulse-box" x="310" y="60" width="130" height="60" rx="10" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text x="375" y="85" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink)">EXECUTE</text>
+      <text x="375" y="104" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)">decode, then ALU / memory / jump</text>
+      <rect id="fdeBox3" class="pulse-box" x="460" y="60" width="130" height="60" rx="10" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text x="525" y="85" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink)">REPEAT</text>
+      <text x="525" y="104" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)">back to FETCH</text>
+      <path class="flow" pathLength="200" d="M140,90 L160,90" stroke="var(--ink-muted)" stroke-width="2" fill="none" marker-end="url(#fdeArr)"/>
+      <path class="flow" pathLength="200" d="M290,90 L310,90" stroke="var(--ink-muted)" stroke-width="2" fill="none" marker-end="url(#fdeArr)"/>
+      <path class="flow" pathLength="200" d="M440,90 L460,90" stroke="var(--ink-muted)" stroke-width="2" fill="none" marker-end="url(#fdeArr)"/>
+      <path id="fdeLoop" class="flow" pathLength="200" d="M525,125 L525,165 L75,165 L75,125" stroke="var(--good)" stroke-width="2" fill="none" marker-end="url(#fdeArr)"/>
+      <text x="300" y="182" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--good)">repeat for every instruction</text>
+    </svg>
+    <div class="anim-controls">
+      <button id="fdePlay" class="on">Play</button>
+      <button id="fdeNext">Step &rarr;</button>
+      <button id="fdeReset">Reset</button>
+      <span class="anim-count" id="fdeCount">stage 0 / 4</span>
+    </div>
+    <div class="anim-desc" id="fdeDesc">Press Play or Step to walk through one instruction.</div>
+  </div>
+
+  <h3>Common instruction categories</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Category</th><th>Example mnemonic</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Data transfer</td><td>lw, sw</td><td>Copy a word between registers and memory</td></tr>
+      <tr><td>Arithmetic</td><td>addu, subu, addi</td><td>Compute a result from registers, or from a register and a constant</td></tr>
+      <tr><td>Logical</td><td>and, or, xor, nor, andi, ori</td><td>Bitwise operations on operands (NOT is a pseudo-instruction, written as nor with $zero)</td></tr>
+      <tr><td>Shift</td><td>sll, srl</td><td>Move bits left or right, filling the vacated bits with 0s</td></tr>
+      <tr><td>Control flow</td><td>beq, bne, j, jal</td><td>Change the PC, so the next instruction isn&rsquo;t simply the following one</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- ===== ADDRESSING MODES ===== -->
+  <h2>Addressing modes</h2>
+  <p>The same opcode can find its operand in several different ways. The addressing mode tells the CPU which way applies. Using MIPS examples (<code>lw</code> loads a word from memory into a register):</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Mode</th><th>Example</th><th>Where the operand comes from</th></tr></thead>
+    <tbody>
+      <tr><td>Immediate</td><td><code>addi $t0, $zero, 5</code></td><td>The value 5 is inside the instruction itself (a 16-bit immediate)</td></tr>
+      <tr><td>Direct (absolute)</td><td><code>lw $t0, 1000($zero)</code></td><td>The contents of memory address 1000. MIPS has no separate direct form for lw, so $zero (always 0) is the base</td></tr>
+      <tr><td>Register</td><td><code>addu $10, $9, $8</code></td><td>The contents of registers $9 and $8 (no memory access)</td></tr>
+      <tr><td>Register indirect</td><td><code>lw $t0, 0($s0)</code></td><td>Memory at the address held in $s0</td></tr>
+      <tr><td>Indexed / base+offset</td><td><code>lw $t0, 100($s0)</code></td><td>Memory at address ($s0 + 100), good for array elements</td></tr>
+      <tr><td>PC-relative</td><td><code>beq $t0, $t1, 3</code></td><td>Address = PC + 4 + 3 &times; 4. The green card writes this offset as OFF18, a 16-bit word offset shifted left 2</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="problem">
+    <span class="k">Practice &middot; find the effective address</span>
+    <p>$s0 holds <code>2000</code>. What is the effective address for <code>lw $t0, 100($s0)</code>? What if the mode were register indirect <code>lw $t0, 0($s0)</code>?</p>
+    <details>
+      <summary>Show answer</summary>
+      <div class="work">Indexed: 2000 + 100 = 2100  (the word at memory address 2100 is loaded into $t0)
+Register indirect: the address is just $s0 = 2000 (the word at memory address 2000 is loaded into $t0)</div>
+    </details>
+  </div>
+
+  <h3>Watch each mode find its operand</h3>
+  <div class="anim-wrap">
+    <div class="anim-controls" id="modeButtons" style="margin-top:0;margin-bottom:10px;"></div>
+    <svg viewBox="0 0 600 220">
+      <defs><marker id="modeArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+      <text x="20" y="28" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">instruction</text>
+      <rect id="modeInstr" class="pulse-box" x="20" y="36" width="230" height="46" rx="8" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text id="modeInstrText" x="135" y="64" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">addi $t0, $zero, 5</text>
+
+      <text x="20" y="120" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">address / source</text>
+      <rect id="modeAddr" class="pulse-box" x="20" y="128" width="230" height="46" rx="8" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text id="modeAddrText" x="135" y="156" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink)">operand is in the instruction</text>
+
+      <text x="370" y="28" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">operand value</text>
+      <rect id="modeVal" class="pulse-box" x="370" y="36" width="210" height="138" rx="8" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.6"/>
+      <text id="modeValText" x="475" y="112" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="26" font-weight="600" fill="var(--accent)">5</text>
+
+      <path id="modeArrow1" class="flow" pathLength="200" d="M250,59 L370,59" stroke="var(--accent)" stroke-width="2" fill="none" marker-end="url(#modeArr)"/>
+      <path id="modeArrow2" class="flow" pathLength="200" d="M250,151 L370,151" stroke="var(--accent)" stroke-width="2" fill="none" marker-end="url(#modeArr)"/>
+      <path id="modeArrow3" class="flow" pathLength="200" d="M135,82 L135,128" stroke="var(--accent)" stroke-width="2" fill="none" marker-end="url(#modeArr)"/>
+    </svg>
+    <div class="anim-controls">
+      <button id="modeNext">Step &rarr;</button>
+      <button id="modeReset">Reset</button>
+      <span class="anim-count" id="modeCount">step 0 / 3</span>
+    </div>
+    <div class="anim-desc" id="modeDesc">Pick a mode above, then step through it.</div>
+  </div>
+
+  <div class="callout"><strong>Running MIPS:</strong> QtSpim is a MIPS simulator. You can load a MIPS program, step through it, and watch the registers and memory change. Use it to check the examples on this page, such as <code>addu $10, $9, $8</code> with $9 = 34 and $8 = 5, which should leave 39 in $10.</div>
+
+  <div class="callout"><strong>Exam tip:</strong> the most common mix-up is <em>immediate</em> vs. <em>direct</em>. In MIPS, <code>addi</code> takes the number 5 directly, so the immediate is a plain number. In <code>lw</code>, the number before the parentheses is an offset added to the base register, so <code>1000($zero)</code> means address 1000. Check your course&rsquo;s notation, since some textbooks use different symbols.</div>
+
+  <!-- ===== TWO'S COMPLEMENT ===== -->
+  <h2>Two&rsquo;s complement and signed numbers</h2>
+  <p>With 8 bits, the unsigned range is 0 to 255. Two&rsquo;s complement uses the same 8 bits for signed numbers from -128 to 127, and the leftmost bit has weight -128. A positive number keeps its unsigned pattern. To get the negative of a number, invert every bit and add 1.</p>
+
+  <div class="problem">
+    <span class="k">Problem 3 &middot; two&rsquo;s complement of +45 and -45</span>
+    <p>Write 45 and -45 as 8-bit two&rsquo;s complement patterns.</p>
+    <details>
+      <summary>Show worked solution</summary>
+      <div class="work">+45:  45 = 32 + 8 + 4 + 1 = 00101101 (positive, so the pattern is unchanged)
+
+-45: start with      00101101
+     invert every bit 11010010
+     add 1            11010011
+
+Check: weights -128, 64, 32, 16, 8, 4, 2, 1
+  1(-128) + 1(64) + 0(32) + 1(16) + 0(8) + 0(4) + 1(2) + 1(1)
+  = -128 + 64 + 16 + 2 + 1 = -45 &check;</div>
+    </details>
+  </div>
+  <p>Interactive version: <a href="number-representations.html">number-representations.html</a>, which also shows +n and -n side by side.</p>
+
+  <!-- ===== SHIFTS ===== -->
+  <h2>Shift instructions</h2>
+  <p><code>sll d, s, shamt</code> shifts bits left and fills the right side with 0s. <code>srl d, s, shamt</code> shifts bits right and fills the left side with 0s. A left shift by n multiplies by 2<sup>n</sup>. A logical right shift by n divides by 2<sup>n</sup> and drops the remainder, for values that are not negative. Both are R-type instructions, with opcode 000000. The funct field is 0x00 for sll and 0x02 for srl.</p>
+
+  <div class="problem">
+    <span class="k">Problem 4 &middot; two shifts in a row</span>
+    <p>$4 holds 5. Find $4 after <code>sll $4, $4, 3</code>, then find $4 after <code>srl $4, $4, 2</code>.</p>
+    <details>
+      <summary>Show worked solution</summary>
+      <div class="work">5 = 00000101
+sll 3:  00101000 = 40   (5 &times; 2&sup3; = 40)
+srl 2:  00001010 = 10   (40 &divide; 2&sup2; = 10, remainder dropped)</div>
+    </details>
+  </div>
+  <p>Interactive version: <a href="shift-instructions.html">shift-instructions.html</a>.</p>
+
+  <!-- ===== BITWISE ===== -->
+  <h2>Bitwise operations</h2>
+  <p>Bitwise operations work on each bit column separately. No carries move between columns.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Operation</th><th>MIPS form</th><th>Result bit is 1 when&hellip;</th></tr></thead>
+    <tbody>
+      <tr><td>AND</td><td><code>and $d, $s, $t</code></td><td>both bits are 1</td></tr>
+      <tr><td>OR</td><td><code>or $d, $s, $t</code></td><td>at least one bit is 1</td></tr>
+      <tr><td>XOR</td><td><code>xor $d, $s, $t</code></td><td>the two bits differ</td></tr>
+      <tr><td>NOT</td><td><code>NOT $d, $s</code> (pseudo); <code>nor $d, $s, $zero</code></td><td>the bit is 0</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="problem">
+    <span class="k">Problem 5 &middot; AND and XOR</span>
+    <p>A = <code>11001010</code>, B = <code>10100110</code>. Find A AND B and A XOR B.</p>
+    <details>
+      <summary>Show worked solution</summary>
+      <div class="work">A       11001010
+B       10100110
+AND     10000010 = 130
+XOR     01101100 = 108</div>
+    </details>
+  </div>
+  <p>Interactive version: <a href="bitwise-instructions.html">bitwise-instructions.html</a>, with AND, OR, XOR, and NOT one column at a time.</p>
+
+  <h2>Interactive pages</h2>
+  <div class="links">
+    <a href="instruction-parts.html">Parts of a machine instruction<span>addu $10, $9, $8 split into fields and traced through the ALU</span></a>
+    <a href="number-representations.html">Base 10 to binary<span>Unsigned, two&rsquo;s complement, and +n / -n side by side</span></a>
+    <a href="shift-instructions.html">Shifts: sll and srl<span>Bits moving left and right, with fills and lost bits</span></a>
+    <a href="bitwise-instructions.html">Bitwise AND, OR, XOR, NOT<span>Column-by-column results with truth tables</span></a>
+    <a href="mips-sandbox.html">MIPS sandbox<span>Write or pick a program and step through it one instruction at a time</span></a>
+  </div>
+
+  <!-- ===== HORNER'S METHOD ===== -->
+  <h2>Horner&rsquo;s method in MIPS</h2>
+  <p>Horner&rsquo;s method evaluates a polynomial with one multiply and one add per term, by nesting the terms:</p>
+  <pre>3x^4 - 2x^3 + 10x^2 - 13x + 14  =  ((((3)x - 2)x + 10)x - 13)x + 14</pre>
+  <p>The MIPS program in <code>HornersMethod.asm</code> does this with <code>mult</code> and <code>mflo</code>. <code>mult</code> puts the full 64-bit product in the Hi and Lo registers, and <code>mflo</code> copies the low 32 bits into the destination register:</p>
+  <pre>mult $10, $9        # $10 * $9 goes into Hi:Lo
+mflo $10            # low 32 bits of the product go into $10</pre>
+
+  <h3>Step through the program line by line</h3>
+  <div class="anim-wrap">
+    <div class="hcode" id="hornCode"></div>
+    <div class="hregs">
+      <div class="hreg"><b>$9 (x)</b><span id="hornX">-</span></div>
+      <div class="hreg"><b>$10</b><span id="hornAcc">-</span></div>
+      <div class="hreg alu" id="hornAlu"><b>ALU</b><span>&nbsp;</span></div>
+      <div class="hreg"><b>Hi</b><span id="hornHi">-</span></div>
+      <div class="hreg"><b>Lo</b><span id="hornLo">-</span></div>
+      <div class="hreg"><b>$v0</b><span id="hornV0">-</span></div>
+    </div>
+    <div class="hop" id="hornOp">Press Next to run the first instruction.</div>
+    <div class="anim-controls">
+      <button id="hornNext" class="on">Next line &rarr;</button>
+      <button id="hornReset">Reset</button>
+      <span class="anim-count" id="hornCount">line 0 / 16</span>
+    </div>
+  </div>
+  <p>Each step uses the accumulator value from the step before it. The result is <strong>440</strong>, which matches evaluating 3x<sup>4</sup> &minus; 2x<sup>3</sup> + 10x<sup>2</sup> &minus; 13x + 14 directly at x = &minus;3: 243 + 54 + 90 + 39 + 14 = 440.</p>
+
+  <h3>Worked example: multiply, then move the low word (newMult.asm)</h3>
+  <p>This program computes 5x &minus; 74 with x = 12. The multiply puts the product in Hi:Lo, and <code>mflo</code> copies the low word into a register:</p>
+  <pre>ori    $8, $0, 12      # $8 = x = 12
+ori    $9, $0, 5       # $9 = 5
+mult   $9, $8          # Hi:Lo = 5 &times; 12 = 60
+mflo   $9              # $9 = Lo = 60
+addiu  $9, $9, -74     # $9 = 60 + (-74) = -14</pre>
+  <p>After <code>mult</code>, Hi is 0 and Lo is 60, because the product is positive and fits in 32 bits. The final value in $9 is <strong>&minus;14</strong>.</p>
+
+  <!-- ===== OVERFLOW ===== -->
+  <h2>Overflow and trapping</h2>
+  <p>A result overflows when it doesn&rsquo;t fit in the register&rsquo;s bits. With two&rsquo;s complement, adding two positive numbers can produce a negative result, and adding two negative numbers can produce a positive one. The sign of the result is then wrong.</p>
+
+  <div class="problem">
+    <span class="k">Problem 6 &middot; 8-bit overflow</span>
+    <p>Add <code>01111111</code> (127) and <code>00000001</code> (1) in 8-bit two&rsquo;s complement.</p>
+    <details>
+      <summary>Show worked solution</summary>
+      <div class="work">  01111111   (127)
++ 00000001   (1)
+= 10000000   reads as -128
+
+The correct answer, 128, doesn&rsquo;t fit in 8 bits. Two positive operands gave a negative result, so the sum overflowed.</div>
+    </details>
+  </div>
+
+  <h3>Two MIPS instructions, two behaviors</h3>
+  <p><code>add</code>, <code>addi</code>, and <code>sub</code> check for overflow. If the result doesn&rsquo;t fit in 32 bits, the CPU raises an arithmetic overflow exception (code 12 on the green card) and does not write the result. <code>addu</code> and <code>addiu</code> never check, so they wrap around silently. The same bits come out either way; the difference is whether the program is told.</p>
+  <pre># build 0x7FFFFFFF = 2147483647 in $8
+lui    $8, 0x7FFF
+ori    $8, $8, 0xFFFF
+addi   $9, $0, 1
+
+add    $10, $8, $9     # overflow: raises the exception, $10 is not written
+addu   $11, $8, $9     # no check: $11 = 0x80000000 = -2147483648</pre>
+  <p>The result of <code>addu</code> is wrong for 2147483647 + 1, and nothing in the program reports it. Use <code>add</code> when the program must catch overflow, and <code>addu</code> when wrapping is intended, as in hash functions and address arithmetic.</p>
+
+  <!-- ===== PRACTICE GAME ===== -->
+  <h2>Practice game: Bit Lab</h2>
+  <p>Ten random questions cover base conversion, two&rsquo;s complement, shifts, and bitwise operations. Choose an answer, then read the explanation before moving on. Refresh or press Restart for a new set.</p>
+  <div class="problem">
+    <div class="gtop"><span id="gRound"></span><span id="gScore"></span><span id="gStreak"></span></div>
+    <div class="gq" id="gQ"></div>
+    <div class="gopts" id="gOpts"></div>
+    <div class="gwhy" id="gWhy"></div>
+    <div class="gctl">
+      <button id="gNext" class="primary" disabled>Next</button>
+      <button id="gRestart">Restart</button>
+    </div>
+  </div>
+
+  <footer>Study guide &mdash; notation for instruction sets and addressing modes varies by textbook and architecture (x86, ARM, MIPS, and teaching ISAs all differ). Confirm against your course materials.</footer>
+
+</div>
+
+<script>
+(function(){
+  var MAX = 4;
+  var counts = { cube: 0, flat: 2, strip: 3, unit: 4 };
+  var places = [
+    { key: 'cube',  label: '125s', digitWeight: 125 },
+    { key: 'flat',  label: '25s',  digitWeight: 25 },
+    { key: 'strip', label: '5s',   digitWeight: 5 },
+    { key: 'unit',  label: '1s',   digitWeight: 1 }
+  ];
+
+  function svgCubes(n, y){
+    var out = '', x = 20;
+    for (var i = 0; i < n; i++) {
+      out += '<rect x="' + (x+8) + '" y="' + (y-8) + '" width="44" height="44" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>' +
+             '<rect x="' + x + '" y="' + y + '" width="44" height="44" fill="var(--accent)" fill-opacity=".35" stroke="var(--accent)" stroke-width="1.2"/>';
+      x += 62;
+    }
+    return out;
+  }
+  function svgFlats(n, y){
+    var out = '', x = 20, cell = 11;
+    for (var f = 0; f < n; f++) {
+      for (var r = 0; r < 5; r++) for (var c = 0; c < 5; c++) {
+        out += '<rect x="' + (x + c*cell) + '" y="' + (y + r*cell) + '" width="' + (cell-1.5) + '" height="' + (cell-1.5) + '" fill="var(--good)" fill-opacity=".55"/>';
+      }
+      x += 5*cell + 14;
+    }
+    return out;
+  }
+  function svgStrips(n, y){
+    var out = '', x = 20, cell = 11;
+    for (var s = 0; s < n; s++) {
+      for (var c = 0; c < 5; c++) {
+        out += '<rect x="' + (x + c*cell) + '" y="' + y + '" width="' + (cell-1.5) + '" height="' + (cell-1.5) + '" fill="var(--accent)" fill-opacity=".7"/>';
+      }
+      x += 5*cell + 14;
+    }
+    return out;
+  }
+  function svgUnits(n, y){
+    var out = '', x = 20;
+    for (var u = 0; u < n; u++) {
+      out += '<rect x="' + x + '" y="' + y + '" width="10" height="10" fill="var(--ink-muted)"/>';
+      x += 14;
+    }
+    return out;
+  }
+
+  function render(){
+    var svg = '';
+    var rows = [
+      { label: '125s', y: 30, draw: function(){ return svgCubes(counts.cube, 40); }, n: counts.cube },
+      { label: '25s',  y: 105, draw: function(){ return svgFlats(counts.flat, 105); }, n: counts.flat },
+      { label: '5s',   y: 175, draw: function(){ return svgStrips(counts.strip, 175); }, n: counts.strip },
+      { label: '1s',   y: 210, draw: function(){ return svgUnits(counts.unit, 210); }, n: counts.unit }
+    ];
+    rows.forEach(function(r){
+      svg += '<text x="400" y="' + (r.y + 14) + '" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink-muted)">' + r.label + ' &times; ' + r.n + '</text>';
+      svg += r.draw();
+    });
+    document.getElementById('blockSvg').innerHTML = svg;
+
+    var digits = counts.cube + '' + counts.flat + '' + counts.strip + '' + counts.unit;
+    digits = digits.replace(/^0+(?=.)/, '');
+    var base10 = counts.cube*125 + counts.flat*25 + counts.strip*5 + counts.unit;
+    document.getElementById('blockReadout').innerHTML =
+      digits + '<sub>5</sub> &nbsp;=&nbsp; ' + base10 + '<sub>10</sub>';
+  }
+
+  function buildControls(){
+    var box = document.getElementById('blockControls');
+    box.innerHTML = '';
+    places.forEach(function(p){
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'text-align:center;font-family:IBM Plex Mono, monospace;font-size:.8rem;color:var(--ink-muted);';
+      wrap.innerHTML =
+        '<div>' + p.label + '</div>' +
+        '<div style="display:flex;gap:6px;justify-content:center;align-items:center;margin-top:4px;">' +
+          '<button data-k="' + p.key + '" data-d="-1" style="font-family:IBM Plex Mono, monospace;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;">&minus;</button>' +
+          '<span id="n-' + p.key + '" style="min-width:14px;color:var(--ink);font-weight:600;">' + counts[p.key] + '</span>' +
+          '<button data-k="' + p.key + '" data-d="1" style="font-family:IBM Plex Mono, monospace;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;">+</button>' +
+        '</div>';
+      box.appendChild(wrap);
+    });
+    box.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        var k = b.getAttribute('data-k');
+        var d = parseInt(b.getAttribute('data-d'), 10);
+        counts[k] = Math.max(0, Math.min(MAX, counts[k] + d));
+        document.getElementById('n-' + k).textContent = counts[k];
+        render();
+      });
+    });
+  }
+
+  buildControls();
+  render();
+})();
+</script>
+<script>
+(function(){
+  // ---------- Fetch-decode-execute cycle ----------
+  var stages = [
+    { box: 0, desc: 'FETCH: the PC holds the address of the next instruction. The CPU reads that memory cell and copies the instruction into the Instruction Register (IR).' },
+    { box: 1, desc: 'INCREMENT: the PC is moved past this instruction, so it holds the address of the next one. This happens before the instruction runs.' },
+    { box: 2, desc: 'EXECUTE: the control unit decodes the IR into an opcode and operands, then the ALU, memory, or a jump does the work. A jump writes its target into the PC here.' },
+    { box: 3, desc: 'REPEAT: the cycle goes back to FETCH for the instruction at the PC. Nothing is fetched until the previous instruction has finished executing.' }
+  ];
+  var fdeWrap = document.querySelectorAll('.anim-wrap')[0];
+  var fdeFlows = fdeWrap.querySelectorAll('path.flow'); // 0..2 between boxes, 3 = loop back
+  var fdeBoxes = [0,1,2,3].map(function(i){ return document.getElementById('fdeBox' + i); });
+  var fdeStage = 0, fdeTimer = null;
+  var fdePlay = document.getElementById('fdePlay');
+
+  function fdeRender(){
+    fdeBoxes.forEach(function(b){ b.classList.remove('hi'); });
+    fdeFlows.forEach(function(f){ f.classList.remove('on'); });
+    for (var i = 0; i < fdeStage; i++) if (i < 3) fdeFlows[i].classList.add('on');
+    if (fdeStage >= 4) fdeFlows[3].classList.add('on');
+    if (fdeStage >= 1 && fdeStage <= 4) fdeBoxes[stages[fdeStage - 1].box].classList.add('hi');
+    document.getElementById('fdeCount').textContent = 'stage ' + fdeStage + ' / 4';
+    document.getElementById('fdeDesc').textContent = fdeStage === 0
+      ? 'Press Play or Step to walk through one instruction.'
+      : stages[fdeStage - 1].desc;
+  }
+  function fdeStop(){
+    clearInterval(fdeTimer); fdeTimer = null;
+    fdePlay.textContent = fdeStage >= 4 ? 'Replay' : 'Play';
+    fdePlay.classList.toggle('on', false);
+  }
+  function fdeAdvance(){
+    if (fdeStage < 4) { fdeStage++; fdeRender(); }
+    if (fdeStage >= 4) fdeStop();
+  }
+  fdePlay.addEventListener('click', function(){
+    if (fdeTimer) { fdeStop(); return; }
+    if (fdeStage >= 4) { fdeStage = 0; fdeRender(); }
+    fdePlay.textContent = 'Pause';
+    fdeAdvance();
+    if (fdeStage < 4) fdeTimer = setInterval(fdeAdvance, 1100);
+  });
+  document.getElementById('fdeNext').addEventListener('click', function(){ fdeStop(); fdeAdvance(); });
+  document.getElementById('fdeReset').addEventListener('click', function(){ fdeStop(); fdeStage = 0; fdeRender(); });
+  fdeRender();
+
+  // ---------- Addressing modes ----------
+  var modes = {
+    'Immediate': {
+      instr: 'addi $t0, $zero, 5', addr: 'no lookup: 5 is in the instruction', val: '5', arrows: ['modeArrow1'],
+      steps: [
+        { desc: 'The instruction itself carries the number 5 in its 16-bit immediate field.', hi: ['modeInstr'], arrows: [] },
+        { desc: 'No memory or register lookup is needed; the value is already here.', hi: ['modeInstr','modeAddr'], arrows: [] },
+        { desc: '5 goes straight into $t0 (0 + 5 = 5).', hi: ['modeVal'], arrows: ['modeArrow1'] }
+      ]
+    },
+    'Direct': {
+      instr: 'lw $t0, 1000($zero)', addr: 'address = 0 + 1000 = 1000', val: '42', arrows: ['modeArrow3','modeArrow2'],
+      steps: [
+        { desc: 'The instruction gives an offset, 1000. $zero holds 0, so the address is 0 + 1000.', hi: ['modeInstr'], arrows: [] },
+        { desc: 'Go to memory location 1000.', hi: ['modeAddr'], arrows: ['modeArrow3'] },
+        { desc: 'The value stored there (42) is loaded into $t0.', hi: ['modeVal'], arrows: ['modeArrow3','modeArrow2'] }
+      ]
+    },
+    'Register': {
+      instr: 'addu $10, $9, $8', addr: '$9 = 34 and $8 = 5', val: '39', arrows: ['modeArrow2'],
+      steps: [
+        { desc: '$9 and $8 are named in the instruction. No memory access happens.', hi: ['modeInstr'], arrows: [] },
+        { desc: 'Read $9 and $8: 34 and 5.', hi: ['modeAddr'], arrows: [] },
+        { desc: 'The two values are added: 34 + 5 = 39, which is written to $10.', hi: ['modeVal'], arrows: ['modeArrow2'] }
+      ]
+    },
+    'Register indirect': {
+      instr: 'lw $t0, 0($s0)', addr: '$s0 = 2000, so address = 2000', val: '50', arrows: ['modeArrow3','modeArrow2'],
+      steps: [
+        { desc: 'The base register $s0 holds an address. The offset 0 adds nothing.', hi: ['modeInstr'], arrows: [] },
+        { desc: '$s0 = 2000, so go to memory address 2000.', hi: ['modeAddr'], arrows: ['modeArrow3'] },
+        { desc: 'The value there (50) is loaded into $t0.', hi: ['modeVal'], arrows: ['modeArrow3','modeArrow2'] }
+      ]
+    },
+    'Indexed': {
+      instr: 'lw $t0, 100($s0)', addr: 'address = $s0 + 100 = 2100', val: '77', arrows: ['modeArrow3','modeArrow2'],
+      steps: [
+        { desc: 'The instruction gives an offset (100) and a base register ($s0).', hi: ['modeInstr'], arrows: [] },
+        { desc: 'Compute 2000 + 100 = 2100, where 2000 is the value of $s0.', hi: ['modeAddr'], arrows: ['modeArrow3'] },
+        { desc: 'Memory at 2100 holds 77, which gets loaded into $t0.', hi: ['modeVal'], arrows: ['modeArrow3','modeArrow2'] }
+      ]
+    },
+    'PC-relative': {
+      instr: 'beq $t0, $t1, 3', addr: 'target = PC + 4 + 3 × 4 = 516', val: 'PC = 516', arrows: ['modeArrow3','modeArrow2'],
+      steps: [
+        { desc: 'The offset 3 counts words from the next instruction, PC + 4 = 504.', hi: ['modeInstr'], arrows: [] },
+        { desc: '3 × 4 = 12, so the target is 504 + 12 = 516.', hi: ['modeAddr'], arrows: ['modeArrow3'] },
+        { desc: 'If $t0 equals $t1, the PC is set to 516. Otherwise the PC stays at 504 and the next instruction is fetched from there.', hi: ['modeVal'], arrows: ['modeArrow3','modeArrow2'] }
+      ]
+    }
+  };
+
+  var modeNames = Object.keys(modes);
+  var currentMode = modeNames[1];
+  var modeStep = 0;
+  var modeBtnBox = document.getElementById('modeButtons');
+  var modeIds = ['modeInstr','modeAddr','modeVal','modeArrow1','modeArrow2','modeArrow3'];
+
+  modeNames.forEach(function(name){
+    var b = document.createElement('button');
+    b.textContent = name;
+    b.addEventListener('click', function(){ currentMode = name; modeStep = 0; modeRender(); });
+    modeBtnBox.appendChild(b);
+  });
+
+  function modeRender(){
+    var m = modes[currentMode];
+    [].forEach.call(modeBtnBox.querySelectorAll('button'), function(b){
+      b.classList.toggle('on', b.textContent === currentMode);
+    });
+    document.getElementById('modeInstrText').textContent = m.instr;
+    document.getElementById('modeAddrText').textContent = m.addr;
+    document.getElementById('modeValText').textContent = m.val;
+    modeIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('hi');
+      if (el.tagName === 'path') el.classList.remove('on');
+    });
+    var s = modeStep > 0 ? m.steps[modeStep - 1] : null;
+    if (s) {
+      s.hi.forEach(function(id){ document.getElementById(id).classList.add('hi'); });
+      s.arrows.forEach(function(id){ document.getElementById(id).classList.add('on'); });
+    }
+    document.getElementById('modeCount').textContent = 'step ' + modeStep + ' / 3';
+    document.getElementById('modeDesc').textContent = s ? s.desc : 'Pick a mode above, then step through it.';
+    document.getElementById('modeNext').disabled = modeStep >= 3;
+  }
+  document.getElementById('modeNext').addEventListener('click', function(){
+    if (modeStep < 3) { modeStep++; modeRender(); }
+  });
+  document.getElementById('modeReset').addEventListener('click', function(){
+    modeStep = 0; modeRender();
+  });
+  modeRender();
+})();
+</script>
+<script>
+(function(){
+  var ROUNDS = 10;
+  var score = 0, streak = 0, round = 0, cur = null, answered = false;
+  var gRound = document.getElementById('gRound'), gScore = document.getElementById('gScore'), gStreak = document.getElementById('gStreak');
+  var gQ = document.getElementById('gQ'), gOpts = document.getElementById('gOpts'), gWhy = document.getElementById('gWhy');
+  var gNext = document.getElementById('gNext'), gRestart = document.getElementById('gRestart');
+
+  function rnd(n){ return Math.floor(Math.random() * n); }
+  function b8(v){ return (v & 0xFF).toString(2).padStart(8, '0'); }
+  function invert(s){ return s.split('').map(function(c){ return c === '0' ? '1' : '0'; }).join(''); }
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  // three distinct wrong answers, drawn from candidates first, then random fill
+  function distractors(correct, cands, fill){
+    var out = [];
+    cands.forEach(function(c){ if (c !== correct && out.indexOf(c) === -1) out.push(c); });
+    var guard = 0;
+    while (out.length < 3 && guard++ < 200) {
+      var r = fill();
+      if (r !== correct && out.indexOf(r) === -1) out.push(r);
+    }
+    return out.slice(0, 3);
+  }
+
+  var bin = function(){ return b8(rnd(256)); };
+  var dec = function(){ return String(rnd(256)); };
+
+  function gUnsigned(){
+    var n = rnd(256), c = b8(n);
+    return { q: 'Write <b>' + n + '</b> in 8-bit unsigned binary.', correct: c,
+      wrong: distractors(c, [b8(n ^ 1), b8(n ^ 128), b8(n ^ 16), b8(n >> 1)], bin),
+      why: n + ' = ' + c + ' (weights 128, 64, 32, 16, 8, 4, 2, 1).' };
+  }
+
+  function gTwos(){
+    var n = rnd(256) - 128, c = b8(n), m = Math.abs(n);
+    return { q: 'Write <b>' + n + '</b> in 8-bit two&rsquo;s complement.', correct: c,
+      wrong: distractors(c, [b8(m), invert(b8(m)), b8(m + 1), b8(-m - 1)], bin),
+      why: n < 0
+        ? 'The magnitude ' + m + ' is ' + b8(m) + '. Invert to ' + invert(b8(m)) + ', then add 1 to get ' + c + '.'
+        : 'A positive number keeps its unsigned pattern: ' + c + '.' };
+  }
+
+  function gNegate(){
+    var m = 1 + rnd(127), c = b8(-m);
+    return { q: 'The 8-bit two&rsquo;s complement of <b>+' + m + '</b> is <code>' + b8(m) + '</code>. What is the pattern for <b>-' + m + '</b>?', correct: c,
+      wrong: distractors(c, [invert(b8(m)), b8(m), b8(-m - 2), b8(m - 1)], bin),
+      why: 'Invert ' + b8(m) + ' to ' + invert(b8(m)) + ', then add 1 to get ' + c + '.' };
+  }
+
+  function gShift(){
+    var v = 1 + rnd(31), n = 1 + rnd(3), left = rnd(2) === 0;
+    var res = left ? (v << n) : (v >> n);
+    var c = String(res);
+    var op = left ? 'sll' : 'srl';
+    return { q: '$4 holds <b>' + v + '</b>. What is $4 after <code>' + op + ' $4, $4, ' + n + '</code>? (decimal)', correct: c,
+      wrong: distractors(c, [String(v), String(res + 1), String(res * 2), String(res >> 1), String(v << 1)], dec),
+      why: left
+        ? v + ' &times; 2<sup>' + n + '</sup> = ' + res + '. Left shifts fill the right side with 0s.'
+        : v + ' &divide; 2<sup>' + n + '</sup> = ' + res + ' with the remainder dropped. Right shifts fill the left side with 0s.' };
+  }
+
+  function gBitwise(){
+    var a = rnd(256), b = rnd(256);
+    var ops = [
+      { name: 'AND', val: a & b, rule: '1 only when both bits are 1' },
+      { name: 'OR',  val: a | b, rule: '1 when at least one bit is 1' },
+      { name: 'XOR', val: a ^ b, rule: '1 when the two bits differ' }
+    ];
+    var pick = ops[rnd(3)], c = b8(pick.val);
+    return { q: 'A = <code>' + b8(a) + '</code>, B = <code>' + b8(b) + '</code>. What is A ' + pick.name + ' B?', correct: c,
+      wrong: distractors(c, [b8(a & b), b8(a | b), b8(a ^ b), b8(a ^ (1 << rnd(8)))], bin),
+      why: pick.name + ' is ' + pick.rule + ', column by column, giving ' + c + ' (' + pick.val + ').' };
+  }
+
+  function gBase5(){
+    var d = [1 + rnd(4), rnd(5), rnd(5), rnd(5)];
+    var str = d.join(''), val = d[0] * 125 + d[1] * 25 + d[2] * 5 + d[3], c = String(val);
+    return { q: 'Convert <code>' + str + '<sub>5</sub></code> to base 10.', correct: c,
+      wrong: distractors(c, [String(val + 5), String(val + 25), String(val - 25), String(parseInt(str, 10))], function(){ return String(100 + rnd(600)); }),
+      why: d[0] + '&middot;125 + ' + d[1] + '&middot;25 + ' + d[2] + '&middot;5 + ' + d[3] + ' = ' + c + '.' };
+  }
+
+  function gBase2(){
+    var n = 100 + rnd(900), c = n.toString(2);
+    return { q: 'Convert <b>' + n + '</b> to binary.', correct: c,
+      wrong: distractors(c, [(n + 1).toString(2), (n - 1).toString(2), (n + 2).toString(2), (n - 2).toString(2)],
+        function(){ return (100 + rnd(900)).toString(2); }),
+      why: 'Repeated division by 2, with remainders read bottom-up, gives ' + c + '.' };
+  }
+
+  var GENS = [gUnsigned, gTwos, gNegate, gShift, gBitwise, gBase5, gBase2];
+
+  function updateTop(){
+    gRound.textContent = 'round ' + Math.min(round, ROUNDS) + ' / ' + ROUNDS;
+    gScore.textContent = 'score ' + score;
+    gStreak.textContent = 'streak ' + streak;
+  }
+
+  function showEnd(){
+    gQ.innerHTML = 'Round complete. Score: <b>' + score + ' / ' + ROUNDS + '</b>.';
+    gOpts.innerHTML = '';
+    gWhy.textContent = score >= 9 ? 'Excellent. You are ready for these topics.'
+      : score >= 6 ? 'Good. Review the sections for the questions you missed.'
+      : 'Keep practicing. Use the interactive pages linked above to see each step.';
+    gNext.disabled = true;
+    updateTop();
+  }
+
+  function newRound(){
+    round++;
+    if (round > ROUNDS) { showEnd(); return; }
+    answered = false;
+    cur = GENS[rnd(GENS.length)]();
+    gQ.innerHTML = cur.q;
+    gWhy.textContent = '';
+    gOpts.innerHTML = '';
+    shuffle([cur.correct].concat(cur.wrong)).forEach(function(v){
+      var btn = document.createElement('button');
+      btn.textContent = v;
+      btn.dataset.v = v;
+      btn.addEventListener('click', function(){ choose(btn, v); });
+      gOpts.appendChild(btn);
+    });
+    gNext.disabled = true;
+    gNext.textContent = round === ROUNDS ? 'See score' : 'Next';
+    updateTop();
+  }
+
+  function choose(btn, v){
+    if (answered) return;
+    answered = true;
+    var ok = v === cur.correct;
+    if (ok) { score++; streak++; } else { streak = 0; }
+    Array.prototype.forEach.call(gOpts.querySelectorAll('button'), function(b){
+      b.disabled = true;
+      if (b.dataset.v === cur.correct) b.classList.add('right');
+    });
+    if (!ok) btn.classList.add('wrong');
+    gWhy.innerHTML = (ok ? '<b>Correct.</b> ' : '<b>Not quite.</b> The answer is <code>' + cur.correct + '</code>. ') + cur.why;
+    gNext.disabled = false;
+    updateTop();
+  }
+
+  gNext.addEventListener('click', newRound);
+  gRestart.addEventListener('click', function(){ score = 0; streak = 0; round = 0; gNext.textContent = 'Next'; newRound(); });
+  newRound();
+})();
+</script>
+<script>
+(function(){
+  // each line of the program, with the register state after it runs (x = -3)
+  // hi/lo are the Hi and Lo registers after mult; null means unchanged
+  var lines = [
+    { code: 'addiu $9, $0, -3',    op: '$9 = -3 (the value of x).',                           x: '-3', acc: null, hi: null, lo: null },
+    { code: 'addiu $10, $0, 3',    op: '$10 = 3, the leading coefficient.',                    acc: '3' },
+    { code: 'mult  $10, $9',       op: 'Full product 3 &times; (-3) = -9 goes into Hi:Lo. Hi = -1 because the product is negative.', hi: '-1', lo: '-9' },
+    { code: 'mflo  $10',           op: 'Copy Lo into $10: $10 = -9.',                         acc: '-9' },
+    { code: 'addiu $10, $10, -2',  op: '$10 = -9 + (-2) = -11.',                              acc: '-11' },
+    { code: 'mult  $10, $9',       op: '-11 &times; (-3) = 33. Hi = 0 because the product is positive.', hi: '0', lo: '33' },
+    { code: 'mflo  $10',           op: 'Copy Lo into $10: $10 = 33.',                         acc: '33' },
+    { code: 'addiu $10, $10, 10',  op: '$10 = 33 + 10 = 43.',                                 acc: '43' },
+    { code: 'mult  $10, $9',       op: '43 &times; (-3) = -129. Hi = -1.',                    hi: '-1', lo: '-129' },
+    { code: 'mflo  $10',           op: 'Copy Lo into $10: $10 = -129.',                       acc: '-129' },
+    { code: 'addiu $10, $10, -13', op: '$10 = -129 + (-13) = -142.',                          acc: '-142' },
+    { code: 'mult  $10, $9',       op: '-142 &times; (-3) = 426. Hi = 0.',                    hi: '0', lo: '426' },
+    { code: 'mflo  $10',           op: 'Copy Lo into $10: $10 = 426.',                        acc: '426' },
+    { code: 'addiu $10, $10, 14',  op: '$10 = 426 + 14 = 440. This is the result.',           acc: '440' },
+    { code: 'addiu $v0, $0, 10',   op: '$v0 = 10, the exit syscall code.',                    v0: '10' },
+    { code: 'syscall',             op: 'Program exits. $10 still holds 440.' }
+  ];
+  var step = 0;
+  var state = { x: '-', acc: '-', hi: '-', lo: '-', v0: '-' };
+  var codeEl = document.getElementById('hornCode');
+  var opEl = document.getElementById('hornOp'), countEl = document.getElementById('hornCount');
+  var nextBtn = document.getElementById('hornNext');
+  var els = { x: 'hornX', acc: 'hornAcc', hi: 'hornHi', lo: 'hornLo', v0: 'hornV0' };
+
+  function render(){
+    // code listing: lines already run are muted, the line just run is highlighted
+    codeEl.innerHTML = lines.map(function(l, i){
+      var cls = i === step - 1 ? 'cur' : (i < step ? 'done' : '');
+      return '<div class="' + cls + '">' + l.code + '</div>';
+    }).join('');
+    Object.keys(els).forEach(function(k){ document.getElementById(els[k]).textContent = state[k]; });
+    opEl.innerHTML = step === 0 ? 'Press Next to run the first instruction.' : lines[step - 1].op;
+    countEl.textContent = 'line ' + step + ' / ' + lines.length;
+    nextBtn.disabled = step >= lines.length;
+  }
+
+  // data moves for each line, as groups that fly one after another
+  // from: a register id, 'code' (the line being run), or the ALU box; the value lands when the flight ends
+  var moves = [
+    [[{ from: 'code', to: 'hornX', text: '-3' }]],
+    [[{ from: 'code', to: 'hornAcc', text: '3' }]],
+    [[{ from: 'hornAcc', to: 'hornAlu', text: '3' }, { from: 'hornX', to: 'hornAlu', text: '-3' }],
+     [{ from: 'hornAlu', to: 'hornLo', text: '-9' }, { from: 'hornAlu', to: 'hornHi', text: '-1' }]],
+    [[{ from: 'hornLo', to: 'hornAcc', text: '-9' }]],
+    [[{ from: 'code', to: 'hornAlu', text: '-2' }, { from: 'hornAcc', to: 'hornAlu', text: '-9' }],
+     [{ from: 'hornAlu', to: 'hornAcc', text: '-11' }]],
+    [[{ from: 'hornAcc', to: 'hornAlu', text: '-11' }, { from: 'hornX', to: 'hornAlu', text: '-3' }],
+     [{ from: 'hornAlu', to: 'hornLo', text: '33' }, { from: 'hornAlu', to: 'hornHi', text: '0' }]],
+    [[{ from: 'hornLo', to: 'hornAcc', text: '33' }]],
+    [[{ from: 'code', to: 'hornAlu', text: '10' }, { from: 'hornAcc', to: 'hornAlu', text: '33' }],
+     [{ from: 'hornAlu', to: 'hornAcc', text: '43' }]],
+    [[{ from: 'hornAcc', to: 'hornAlu', text: '43' }, { from: 'hornX', to: 'hornAlu', text: '-3' }],
+     [{ from: 'hornAlu', to: 'hornLo', text: '-129' }, { from: 'hornAlu', to: 'hornHi', text: '-1' }]],
+    [[{ from: 'hornLo', to: 'hornAcc', text: '-129' }]],
+    [[{ from: 'code', to: 'hornAlu', text: '-13' }, { from: 'hornAcc', to: 'hornAlu', text: '-129' }],
+     [{ from: 'hornAlu', to: 'hornAcc', text: '-142' }]],
+    [[{ from: 'hornAcc', to: 'hornAlu', text: '-142' }, { from: 'hornX', to: 'hornAlu', text: '-3' }],
+     [{ from: 'hornAlu', to: 'hornLo', text: '426' }, { from: 'hornAlu', to: 'hornHi', text: '0' }]],
+    [[{ from: 'hornLo', to: 'hornAcc', text: '426' }]],
+    [[{ from: 'code', to: 'hornAlu', text: '14' }, { from: 'hornAcc', to: 'hornAlu', text: '426' }],
+     [{ from: 'hornAlu', to: 'hornAcc', text: '440' }]],
+    [[{ from: 'code', to: 'hornV0', text: '10' }]],
+    []
+  ];
+  var busy = false;
+  var wrap = codeEl.closest('.anim-wrap');
+  wrap.style.position = 'relative';
+
+  // one chip slides from the source box to the destination box
+  function flight(m, idx){
+    var wr = wrap.getBoundingClientRect();
+    function center(el){
+      var box = el.closest('.hreg') || el;
+      var r = box.getBoundingClientRect();
+      return { x: r.left - wr.left + r.width / 2, y: r.top - wr.top + r.height / 2 };
+    }
+    var srcEl = m.from === 'code' ? codeEl.children[idx] : document.getElementById(m.from);
+    var a = center(srcEl), b = center(document.getElementById(m.to));
+    var chip = document.createElement('div');
+    chip.className = 'hchip';
+    chip.textContent = m.text;
+    chip.style.left = a.x + 'px';
+    chip.style.top = a.y + 'px';
+    wrap.appendChild(chip);
+    void chip.offsetWidth; // make the start position take effect before moving
+    chip.style.left = b.x + 'px';
+    chip.style.top = b.y + 'px';
+    setTimeout(function(){ chip.style.opacity = '0'; }, 620);
+    setTimeout(function(){ chip.remove(); }, 950);
+  }
+
+  function advance(){
+    if (busy || step >= lines.length) return;
+    busy = true;
+    nextBtn.disabled = true;
+    var idx = step, l = lines[idx], groups = moves[idx] || [], t = 0;
+    groups.forEach(function(group){
+      setTimeout(function(){ group.forEach(function(m){ flight(m, idx); }); }, t);
+      t += 700;
+    });
+    setTimeout(function(){
+      if (l.x !== undefined) state.x = l.x;
+      if (l.acc !== undefined && l.acc !== null) state.acc = l.acc;
+      if (l.hi !== undefined && l.hi !== null) state.hi = l.hi;
+      if (l.lo !== undefined && l.lo !== null) state.lo = l.lo;
+      if (l.v0 !== undefined) state.v0 = l.v0;
+      step++;
+      busy = false;
+      render();
+    }, t + 50);
+  }
+
+  nextBtn.addEventListener('click', advance);
+  document.getElementById('hornReset').addEventListener('click', function(){
+    step = 0; state = { x: '-', acc: '-', hi: '-', lo: '-', v0: '-' }; render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

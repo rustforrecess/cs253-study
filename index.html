@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS253 Study Pages</title>
+<meta name="description" content="Interactive study pages for number bases, two's complement, machine instructions, shifts, bitwise operations, and MIPS" />
+<style>
+  :root{
+    --bg:#f7f5fb; --surface:#ffffff; --surface-2:#efecf7; --ink:#211f2e; --ink-muted:#615d78;
+    --border:#e0dced; --accent:#5b3fa0; --accent-soft:#ece6fa;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151220; --surface:#1d1930; --surface-2:#241f3a; --ink:#eae7f5; --ink-muted:#a49dc2;
+      --border:#332c54; --accent:#a68cf0; --accent-soft:#2c2450;
+      color-scheme: dark;
+    }
+  }
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5;padding-inline:16px;}
+  .wrap{max-width:720px;margin:0 auto;padding-block:32px 60px;}
+  h1{font-size:1.6rem;margin:0 0 6px;}
+  p.lede{color:var(--ink-muted);margin:0 0 20px;}
+  ul{list-style:none;padding:0;margin:0;display:grid;gap:10px;}
+  li a{display:block;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--accent);text-decoration:none;font-weight:600;}
+  li a:hover{background:var(--accent-soft);}
+  li span{display:block;color:var(--ink-muted);font-weight:400;font-size:.9rem;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CS253 Study Pages</h1>
+  <p class="lede">Start with the architecture study guide. The other pages are linked from it, and each one also works on its own.</p>
+  <ul>
+    <li><a href="architecture-study-guide.html">Architecture study guide<span>Number bases, two's complement, instructions, shifts, bitwise operations, Horner's method, overflow, and the practice game</span></a></li>
+    <li><a href="instruction-parts.html">Parts of a machine instruction<span>addu $10, $9, $8 split into fields and traced through the ALU</span></a></li>
+    <li><a href="number-representations.html">Base 10 to binary<span>Unsigned, two's complement, and +n / -n side by side</span></a></li>
+    <li><a href="shift-instructions.html">Shifts: sll and srl<span>Bits moving left and right, with fills and lost bits</span></a></li>
+    <li><a href="bitwise-instructions.html">Bitwise AND, OR, XOR, NOT<span>Column-by-column results with truth tables</span></a></li>
+    <li><a href="mips-sandbox.html">MIPS sandbox<span>Write or pick a program and step through it one instruction at a time</span></a></li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parts of a Machine Instruction</title>
+<meta name="description" content="Animated breakdown of addu $10, $9, $8 into opcode, two sources, and destination" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f5fb; --surface:#ffffff; --surface-2:#efecf7; --ink:#211f2e; --ink-muted:#615d78;
+    --border:#e0dced; --accent:#5b3fa0; --accent-soft:#ece6fa; --good:#1a7a5e; --good-soft:#e0f3ec;
+    --op:#5b3fa0; --s1:#1a7a5e; --s2:#a3760f; --dst:#a13a3a; --pad:#9a94b0;
+    --shadow: 0 1px 2px rgba(33,31,46,0.06), 0 8px 24px -12px rgba(33,31,46,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151220; --surface:#1d1930; --surface-2:#241f3a; --ink:#eae7f5; --ink-muted:#a49dc2;
+      --border:#332c54; --accent:#a68cf0; --accent-soft:#2c2450; --good:#5cc2a4; --good-soft:#173029;
+      --op:#a68cf0; --s1:#5cc2a4; --s2:#e0b25c; --dst:#e0857a; --pad:#5d5780;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.55;padding-inline:20px;}
+  .wrap{max-width:860px;margin:0 auto;padding-block:28px 60px;}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:clamp(1.5rem,4vw,2rem);margin:0 0 6px;}
+  .lede{color:var(--ink-muted);font-size:.98rem;margin:0 0 16px;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--surface-2);padding:.1em .4em;border-radius:4px;font-size:.9em;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);}
+  .card svg{width:100%;height:auto;display:block;}
+  .fld{transition:opacity .35s ease,stroke-width .35s ease;}
+  .fld.dim{opacity:.28;}
+  .fld.hi{stroke-width:3;}
+  .arrowp{stroke-dasharray:400;stroke-dashoffset:400;transition:stroke-dashoffset .8s ease;}
+  .arrowp.on{stroke-dashoffset:0;}
+  .reg{transition:fill .35s ease,stroke .35s ease;}
+  .reg.hi{fill:var(--accent-soft);}
+  .reg.res{fill:var(--good-soft);stroke:var(--good);}
+  .controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+  .controls button{font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .controls button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .controls button:disabled{opacity:.4;cursor:default;}
+  .count{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink-muted);}
+  .desc{background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.93rem;min-height:2.8em;}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink-muted);margin-top:10px;}
+  .legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle;background:var(--c);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Parts of a Machine Instruction</h1>
+  <p class="lede">The instruction <code>addu $10, $9, $8</code> is stored as one 32-bit pattern. Each field of that pattern carries one of the four parts: the operation, the first source, the second source, and the destination.</p>
+
+  <div class="card">
+    <svg viewBox="0 0 800 330" id="ip-svg">
+      <defs><marker id="ipArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-muted)"/></marker></defs>
+
+      <!-- 32-bit instruction word, R-type fields -->
+      <text x="20" y="28" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">32-bit machine instruction (hex 0x01285021)</text>
+
+      <g id="fields"></g>
+
+      <!-- register file -->
+      <text x="640" y="150" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">registers</text>
+      <rect id="r9" class="reg" x="620" y="160" width="150" height="34" rx="8" fill="var(--surface-2)" stroke="var(--s1)" stroke-width="1.6"/>
+      <text x="695" y="182" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">$9 = 34</text>
+      <rect id="r8" class="reg" x="620" y="202" width="150" height="34" rx="8" fill="var(--surface-2)" stroke="var(--s2)" stroke-width="1.6"/>
+      <text x="695" y="224" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">$8 = 5</text>
+      <rect id="r10" class="reg" x="620" y="244" width="150" height="34" rx="8" fill="var(--surface-2)" stroke="var(--dst)" stroke-width="1.6"/>
+      <text id="r10t" x="695" y="266" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)">$10 = ?</text>
+
+      <!-- ALU -->
+      <rect id="alu" class="reg" x="400" y="190" width="120" height="50" rx="10" fill="var(--surface-2)" stroke="var(--op)" stroke-width="1.6"/>
+      <text x="460" y="212" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink)">ALU</text>
+      <text x="460" y="230" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)">add (from opcode)</text>
+
+      <!-- arrows -->
+      <path id="a9" class="arrowp" d="M620,177 L520,205" stroke="var(--s1)" stroke-width="2.2" fill="none" marker-end="url(#ipArr)"/>
+      <path id="a8" class="arrowp" d="M620,219 L520,222" stroke="var(--s2)" stroke-width="2.2" fill="none" marker-end="url(#ipArr)"/>
+      <path id="aOut" class="arrowp" d="M520,215 L620,261" stroke="var(--dst)" stroke-width="2.2" fill="none" marker-end="url(#ipArr)"/>
+      <path id="aOp" class="arrowp" d="M220,300 L400,235" stroke="var(--op)" stroke-width="2.2" fill="none" marker-end="url(#ipArr)"/>
+    </svg>
+
+    <div class="legend">
+      <span style="--c:var(--op)">operation (opcode)</span>
+      <span style="--c:var(--s1)">source 1 ($9)</span>
+      <span style="--c:var(--s2)">source 2 ($8)</span>
+      <span style="--c:var(--dst)">destination ($10)</span>
+    </div>
+
+    <div class="controls">
+      <button id="ipPlay" class="primary">Play</button>
+      <button id="ipNext">Step &rarr;</button>
+      <button id="ipReset">Reset</button>
+      <span class="count" id="ipCount">stage 0 / 4</span>
+    </div>
+    <div class="desc" id="ipDesc">Press Play or Step to see which bits carry each part.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // R-type fields for addu $10, $9, $8 (bit widths 6,5,5,5,5,6)
+  var fieldDefs = [
+    { name: 'opcode', bits: '000000', w: 6,  color: 'var(--op)',   role: 'operation' },
+    { name: 'rs',     bits: '01001',  w: 5,  color: 'var(--s1)',   role: 'source 1 ($9)' },
+    { name: 'rt',     bits: '01000',  w: 5,  color: 'var(--s2)',   role: 'source 2 ($8)' },
+    { name: 'rd',     bits: '01010',  w: 5,  color: 'var(--dst)',  role: 'destination ($10)' },
+    { name: 'shamt',  bits: '00000',  w: 5,  color: 'var(--pad)',  role: 'unused here (shift amount)' },
+    { name: 'funct',  bits: '100001', w: 6,  color: 'var(--op)',   role: 'operation detail: 0x21 = addu' }
+  ];
+
+  var unit = 20, x0 = 20, y = 60, h = 60;
+  var fieldsHtml = '', x = x0;
+  var fieldRects = [];
+  fieldDefs.forEach(function(f, i){
+    var w = f.w * unit;
+    fieldsHtml +=
+      '<g class="fld" id="f' + i + '">' +
+        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="var(--surface-2)" stroke="' + f.color + '" stroke-width="1.6"/>' +
+        '<text x="' + (x + w/2) + '" y="' + (y + 25) + '" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="' + (f.w >= 6 ? 12 : 11) + '" fill="var(--ink)">' + f.bits + '</text>' +
+        '<text x="' + (x + w/2) + '" y="' + (y + 45) + '" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)">' + f.name + '</text>' +
+      '</g>';
+    x += w;
+  });
+  // role labels below the word
+  fieldDefs.forEach(function(f, i){
+    // computed x position of this field's center
+    var cx = x0; for (var j = 0; j < i; j++) cx += fieldDefs[j].w * unit;
+    cx += f.w * unit / 2;
+    fieldsHtml += '<text class="fld" id="lbl' + i + '" x="' + cx + '" y="' + (y + h + 22) + '" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="' + f.color + '" font-weight="600">' + f.role + '</text>';
+  });
+  document.getElementById('fields').innerHTML = fieldsHtml;
+
+  var stages = [
+    { desc: 'The whole word: 6+5+5+5+5+6 = 32 bits. R-type instructions split it into these fixed fields.', dim: [], hi: [], arrows: [], res: false },
+    { desc: 'Operation: the opcode 000000 and funct 100001 together say "addu". The ALU is set to add.', dim: [1,2,3,4], hi: [0,5], arrows: ['aOp'], res: false },
+    { desc: 'Source 1: the rs field 01001 selects register $9 (value 34). Its value goes to the ALU.', dim: [0,2,3,4,5], hi: [1], arrows: ['a9'], res: false },
+    { desc: 'Source 2: the rt field 01000 selects register $8 (value 5). Its value also goes to the ALU, and 34 + 5 = 39.', dim: [0,1,3,4,5], hi: [2], arrows: ['a8'], res: false },
+    { desc: 'Destination: the rd field 01010 selects $10. The 39 from the ALU is written there.', dim: [0,1,2,4,5], hi: [3], arrows: ['aOut'], res: true }
+  ];
+
+  var stage = 0, timer = null;
+  var playBtn = document.getElementById('ipPlay');
+
+  function render(){
+    var s = stages[stage];
+    fieldDefs.forEach(function(_, i){
+      document.getElementById('f' + i).classList.toggle('dim', s.dim.indexOf(i) !== -1);
+      document.getElementById('f' + i).querySelector('rect').setAttribute('stroke-width', s.hi.indexOf(i) !== -1 ? 3 : 1.6);
+      document.getElementById('lbl' + i).classList.toggle('dim', s.dim.indexOf(i) !== -1);
+    });
+    ['a9','a8','aOut','aOp'].forEach(function(id){
+      document.getElementById(id).classList.toggle('on', s.arrows.indexOf(id) !== -1);
+    });
+    document.getElementById('r10').classList.toggle('res', s.res);
+    document.getElementById('r10t').textContent = s.res ? '$10 = 39' : '$10 = ?';
+    document.getElementById('alu').classList.toggle('hi', stage === 1 || stage === 2 || stage === 3);
+    document.getElementById('ipDesc').textContent = s.desc;
+    document.getElementById('ipCount').textContent = 'stage ' + stage + ' / 4';
+    document.getElementById('ipNext').disabled = stage >= 4;
+  }
+
+  function stop(){ clearInterval(timer); timer = null; playBtn.textContent = stage >= 4 ? 'Replay' : 'Play'; }
+  function advance(){ if (stage < 4) { stage++; render(); } if (stage >= 4) stop(); }
+
+  playBtn.addEventListener('click', function(){
+    if (timer) { stop(); return; }
+    if (stage >= 4) { stage = 0; render(); }
+    playBtn.textContent = 'Pause';
+    advance();
+    if (stage < 4) timer = setInterval(advance, 1800);
+  });
+  document.getElementById('ipNext').addEventListener('click', function(){ stop(); advance(); });
+  document.getElementById('ipReset').addEventListener('click', function(){ stop(); stage = 0; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

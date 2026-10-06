@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base 10 to Binary: Unsigned and Two's Complement</title>
+<meta name="description" content="Convert a base 10 number to 8-bit unsigned binary and two's complement, with steps" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f5fb; --surface:#ffffff; --surface-2:#efecf7; --ink:#211f2e; --ink-muted:#615d78;
+    --border:#e0dced; --accent:#5b3fa0; --accent-soft:#ece6fa; --good:#1a7a5e; --good-soft:#e0f3ec;
+    --warn:#a13a3a; --warn-soft:#f6e3e3;
+    --shadow: 0 1px 2px rgba(33,31,46,0.06), 0 8px 24px -12px rgba(33,31,46,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151220; --surface:#1d1930; --surface-2:#241f3a; --ink:#eae7f5; --ink-muted:#a49dc2;
+      --border:#332c54; --accent:#a68cf0; --accent-soft:#2c2450; --good:#5cc2a4; --good-soft:#173029;
+      --warn:#e0857a; --warn-soft:#3a2024;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.55;padding-inline:16px;}
+  .wrap{max-width:860px;margin:0 auto;padding-block:28px 60px;}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:clamp(1.5rem,4vw,2rem);margin:0 0 6px;}
+  h2{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:1.25rem;margin:24px 0 8px;}
+  .lede{color:var(--ink-muted);font-size:.98rem;margin:0 0 16px;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--surface-2);padding:.1em .4em;border-radius:4px;font-size:.9em;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  input[type=number]{font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:140px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);}
+  button{font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .quick{margin-top:10px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+  .label{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink-muted);}
+  .bits{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap;}
+  .bit{width:40px;height:44px;border-radius:8px;border:1.6px solid var(--ink-muted);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:600;transition:background .3s ease,border-color .3s ease;}
+  .bit.one{background:var(--accent-soft);border-color:var(--accent);}
+  .places{display:flex;gap:6px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--ink-muted);}
+  .places span{width:40px;text-align:center;}
+  .value{font-family:'IBM Plex Mono',monospace;font-size:.95rem;margin-top:8px;}
+  .range{font-size:.85rem;color:var(--ink-muted);margin-top:4px;}
+  .bad{color:var(--warn);}
+  table{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:.85rem;}
+  th,td{border:1px solid var(--border);padding:5px 12px;text-align:center;}
+  th{background:var(--surface-2);font-weight:600;}
+  .steps{font-size:.93rem;}
+  .steps li{margin-bottom:6px;}
+  .stepbox{background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-top:10px;}
+  .flip{transition:background .4s ease;}
+  .nobits{color:var(--warn);font-family:'IBM Plex Mono',monospace;font-size:.9rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Base 10 to Binary</h1>
+  <p class="lede">The same 8 bits can mean different numbers depending on the representation. Enter a base 10 number to see its unsigned pattern and its two's complement pattern, with the steps.</p>
+
+  <div class="card">
+    <div class="row">
+      <label class="label" for="num">base 10 value</label>
+      <input type="number" id="num" min="-128" max="255" value="-45" step="1">
+      <button id="go" class="primary">Convert</button>
+    </div>
+    <div class="row quick">
+      <span class="label">try:</span>
+      <button data-v="45">45</button>
+      <button data-v="-45">-45</button>
+      <button data-v="200">200</button>
+      <button data-v="-1">-1</button>
+      <button data-v="0">0</button>
+      <button data-v="127">127</button>
+      <button data-v="-128">-128</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 style="margin-top:0">Unsigned (8-bit)</h2>
+      <div class="range">range 0 to 255. Every bit is a magnitude bit.</div>
+      <div id="uBits"></div>
+      <div id="uVal" class="value"></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Two's complement (8-bit)</h2>
+      <div class="range">range -128 to 127. The leftmost bit has weight -128.</div>
+      <div id="tBits"></div>
+      <div id="tVal" class="value"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Positive and negative of the same integer</h2>
+    <div class="range">Same magnitude, two's complement. The negative is the positive pattern with every bit inverted, then 1 added.</div>
+    <div class="grid" style="margin-top:8px">
+      <div>
+        <div class="label" id="pLabel"></div>
+        <div id="pBits"></div>
+      </div>
+      <div>
+        <div class="label" id="nLabel"></div>
+        <div id="nBits"></div>
+      </div>
+    </div>
+    <div id="pairNote" class="value"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Steps</h2>
+    <div id="steps" class="steps"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var W = 8;
+  var input = document.getElementById('num');
+
+  function bitsHtml(bits, weights){
+    var cells = '<div class="bits">', places = '<div class="places">';
+    bits.split('').forEach(function(b, i){
+      cells += '<div class="bit' + (b === '1' ? ' one' : '') + '">' + b + '</div>';
+      places += '<span>' + weights[i] + '</span>';
+    });
+    return cells + '</div><div>' + places + '</div></div>';
+  }
+
+  // unsigned weights 128..1; two's complement weights -128 then 64..1
+  var UW = [128,64,32,16,8,4,2,1];
+  var TW = [-128,64,32,16,8,4,2,1];
+
+  function toBits(v){ return (v & 0xFF).toString(2).padStart(W, '0'); }
+
+  function divisionRows(n){
+    var rows = [], m = n;
+    while (m > 0) { rows.push({ n: m, q: Math.floor(m / 2), r: m % 2 }); m = Math.floor(m / 2); }
+    return rows;
+  }
+
+  function divTable(n){
+    if (n === 0) return '<p>0 has no divisions. Its binary form is 0.</p>';
+    var rows = divisionRows(n);
+    var html = '<table><tr><th>divide</th><th>quotient</th><th>remainder</th></tr>';
+    rows.forEach(function(r){
+      html += '<tr><td>' + r.n + ' ÷ 2</td><td>' + r.q + '</td><td>' + r.r + '</td></tr>';
+    });
+    html += '</table>';
+    var readUp = rows.map(function(r){ return r.r; }).reverse().join('');
+    return html + '<p>Read the remainders from the bottom up: <code>' + readUp + '</code>, which is the binary form of ' + n + '.</p>';
+  }
+
+  function render(){
+    var raw = input.value.trim();
+    var n = parseInt(raw, 10);
+    var uBox = document.getElementById('uBits'), tBox = document.getElementById('tBits');
+    var uVal = document.getElementById('uVal'), tVal = document.getElementById('tVal');
+    var steps = document.getElementById('steps');
+
+    if (raw === '' || isNaN(n)) {
+      uBox.innerHTML = ''; tBox.innerHTML = '';
+      uVal.textContent = ''; tVal.textContent = '';
+      steps.innerHTML = '<p>Enter a whole number.</p>';
+      return;
+    }
+
+    // unsigned
+    if (n >= 0 && n <= 255) {
+      uBox.innerHTML = bitsHtml(toBits(n), UW);
+      uVal.textContent = n + ' in base 10 = ' + toBits(n) + ' in base 2';
+    } else {
+      uBox.innerHTML = '<p class="nobits">Out of range: unsigned 8-bit holds 0 to 255 only.</p>';
+      uVal.textContent = '';
+    }
+
+    // two's complement
+    if (n >= -128 && n <= 127) {
+      var tb = toBits(n);
+      tBox.innerHTML = bitsHtml(tb, TW);
+      tVal.textContent = n + ' in base 10 = ' + tb + ' in two\'s complement';
+    } else {
+      tBox.innerHTML = '<p class="nobits">Out of range: two\'s complement 8-bit holds -128 to 127 only.</p>';
+      tVal.textContent = '';
+    }
+
+    // steps
+    var html = '';
+    if (n >= 0) {
+      html += '<p><b>Positive or zero, base 10 to base 2 by repeated division by 2:</b></p>' + divTable(n);
+      if (n >= 0 && n <= 127) {
+        html += '<p>Two\'s complement of a positive number is the same as its unsigned pattern, so the leftmost bit is 0. Here it is <code>' + toBits(n) + '</code>.</p>';
+      } else if (n > 127 && n <= 255) {
+        html += '<p>' + n + ' is above 127, so as an 8-bit two\'s complement pattern it is not a valid positive number. Its bit pattern <code>' + toBits(n) + '</code> reads as ' + (n - 256) + ' in two\'s complement.</p>';
+      }
+    } else {
+      var m = -n;
+      var mag = m.toString(2).padStart(W, '0');
+      var inv = mag.split('').map(function(b){ return b === '0' ? '1' : '0'; }).join('');
+      var plusOne = ((parseInt(inv, 2) + 1) & 0xFF).toString(2).padStart(W, '0');
+      html += '<p><b>Negative, two\'s complement by three steps:</b></p>';
+      html += '<div class="stepbox"><ol class="steps">' +
+        '<li>Start with the magnitude ' + m + ' in base 2: <code>' + mag + '</code> (repeated division below).</li>' +
+        '<li>Invert every bit (one\'s complement): <code>' + inv + '</code>.</li>' +
+        '<li>Add 1: <code>' + inv + ' + 1 = ' + plusOne + '</code>. This is the two\'s complement of ' + n + '.</li>' +
+      '</ol></div>';
+      html += '<p>Check: the bit pattern <code>' + plusOne + '</code> with weights -128, 64, 32, 16, 8, 4, 2, 1 gives ' + (parseInt(plusOne, 2) - 256) + '.</p>';
+      html += '<p><b>Magnitude to base 2 by repeated division by 2:</b></p>' + divTable(m);
+    }
+    steps.innerHTML = html;
+
+    // positive and negative of the same magnitude
+    var pLabel = document.getElementById('pLabel'), nLabel = document.getElementById('nLabel');
+    var pBits = document.getElementById('pBits'), nBits = document.getElementById('nBits');
+    var pairNote = document.getElementById('pairNote');
+    var mag = Math.abs(n);
+    if (n === 0 || mag > 127) {
+      pLabel.textContent = ''; nLabel.textContent = '';
+      pBits.innerHTML = ''; nBits.innerHTML = '';
+      pairNote.textContent = (mag > 127) ? 'Pick a value from -127 to 127 to see both signs. +128 is not representable in 8-bit two\'s complement.' : '';
+    } else {
+      var pos = toBits(mag);
+      var neg = toBits(-mag);
+      var invPos = pos.split('').map(function(b){ return b === '0' ? '1' : '0'; }).join('');
+      pLabel.textContent = '+' + mag + '  →  ' + pos;
+      nLabel.textContent = '-' + mag + '  →  ' + neg;
+      pBits.innerHTML = bitsHtml(pos, TW);
+      nBits.innerHTML = bitsHtml(neg, TW);
+      pairNote.innerHTML = 'Start from ' + pos + ', invert to ' + invPos + ', add 1 to get ' + neg + '.';
+    }
+  }
+
+  document.getElementById('go').addEventListener('click', render);
+  input.addEventListener('input', render);
+  document.querySelectorAll('[data-v]').forEach(function(b){
+    b.addEventListener('click', function(){ input.value = b.getAttribute('data-v'); render(); });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

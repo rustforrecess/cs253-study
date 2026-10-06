@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift Instructions: sll and srl</title>
+<meta name="description" content="Animated left and right logical shifts: sll $4,$4,3 and srl $4,$4,3" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f5fb; --surface:#ffffff; --surface-2:#efecf7; --ink:#211f2e; --ink-muted:#615d78;
+    --border:#e0dced; --accent:#5b3fa0; --accent-soft:#ece6fa; --good:#1a7a5e; --good-soft:#e0f3ec;
+    --warn:#a13a3a; --warn-soft:#f6e3e3;
+    --shadow: 0 1px 2px rgba(33,31,46,0.06), 0 8px 24px -12px rgba(33,31,46,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151220; --surface:#1d1930; --surface-2:#241f3a; --ink:#eae7f5; --ink-muted:#a49dc2;
+      --border:#332c54; --accent:#a68cf0; --accent-soft:#2c2450; --good:#5cc2a4; --good-soft:#173029;
+      --warn:#e0857a; --warn-soft:#3a2024;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.55;padding-inline:20px;}
+  .wrap{max-width:860px;margin:0 auto;padding-block:28px 60px;}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:clamp(1.5rem,4vw,2rem);margin:0 0 6px;}
+  .lede{color:var(--ink-muted);font-size:.98rem;margin:0 0 16px;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--surface-2);padding:.1em .4em;border-radius:4px;font-size:.9em;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);}
+  .card svg{width:100%;height:auto;display:block;}
+  .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+  .controls button{font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .controls button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .controls button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .controls button:disabled{opacity:.4;cursor:default;}
+  .count{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink-muted);}
+  .desc{background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.93rem;min-height:2.8em;}
+  .fields{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--ink-muted);margin-top:14px;line-height:1.7;}
+  .fields b{color:var(--ink);font-weight:600;}
+  .cellbit{transition:fill .3s ease,stroke .3s ease;}
+  .cellbit.vac{fill:var(--warn-soft);stroke:var(--warn);}
+  .cellbit.res{fill:var(--good-soft);stroke:var(--good);}
+  .newbit{animation:popIn .5s ease;transform-box:fill-box;transform-origin:50% 50%;}
+  .arrowp{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .6s ease forwards;}
+  .arrowp.lost{stroke-dasharray:4 4;stroke-dashoffset:0;animation:none;}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  @keyframes popIn{0%{transform:scale(.4);opacity:0;}60%{transform:scale(1.12);opacity:1;}100%{transform:scale(1);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Shift Instructions: sll and srl</h1>
+  <p class="lede">A shift moves every bit of a register by a fixed number of places. <code>sll</code> moves bits left and fills the right side with 0s. <code>srl</code> moves bits right and fills the left side with 0s.</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button id="tabSll" class="on">sll $4, $4, 3</button>
+      <button id="tabSrl">srl $4, $4, 3</button>
+    </div>
+
+    <svg viewBox="0 0 680 290" id="sh-svg">
+      <defs><marker id="shArr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+      <text id="topLabel" x="14" y="40" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">before</text>
+      <text id="botLabel" x="14" y="190" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-muted)">after</text>
+      <g id="topRow"></g>
+      <g id="arrows"></g>
+      <g id="botRow"></g>
+      <text id="readout" x="340" y="278" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)"></text>
+    </svg>
+
+    <div class="controls">
+      <button id="stepBtn" class="primary">Step &rarr;</button>
+      <button id="resetBtn">Reset</button>
+      <span class="count" id="count">stage 0 / 3</span>
+    </div>
+    <div class="desc" id="desc"></div>
+    <div class="fields" id="fields"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var W = 8, CW = 52, GAP = 12, X0 = 90, CH = 50, TOP = 50, BOT = 190, N = 3;
+  var MODES = {
+    sll: { start: 5,  dir: -1, label: 'sll',
+      desc: [
+        '$4 holds 5. The register is 32 bits wide, but only the low 8 bits are shown: 00000101. The upper 24 bits are all 0.',
+        'sll $4, $4, 3 moves every bit 3 places toward the left. The bits that go past the left edge are lost.',
+        'The 3 places on the right are filled with 0. A left shift never brings in 1s from the right.',
+        'Result: $4 = 40 (00101000). Each left shift by 1 doubles the value, so shifting by 3 multiplies by 2^3 = 8: 5 × 8 = 40.'],
+      fields: '<b>sll</b> is R-type: opcode <b>000000</b> | rs <b>00000</b> | rt <b>00100</b> ($4) | rd <b>00100</b> ($4) | shamt <b>00011</b> (3) | funct <b>000000</b> (0x00)' },
+    srl: { start: 40, dir: 1, label: 'srl',
+      desc: [
+        '$4 holds 40: 00101000 in the low 8 bits. The upper 24 bits are all 0.',
+        'srl $4, $4, 3 moves every bit 3 places toward the right. The bits that go past the right edge are lost.',
+        'The 3 places on the left are filled with 0. A logical right shift always fills with 0s, even if the value were negative.',
+        'Result: $4 = 5 (00000101). Each right shift by 1 halves the value and drops the remainder, so shifting by 3 divides by 8: 40 ÷ 8 = 5.'],
+      fields: '<b>srl</b> is R-type: opcode <b>000000</b> | rs <b>00000</b> | rt <b>00100</b> ($4) | rd <b>00100</b> ($4) | shamt <b>00011</b> (3) | funct <b>000010</b> (0x02)' }
+  };
+
+  var mode = 'sll', stage = 0;
+  var stepBtn = document.getElementById('stepBtn');
+
+  function cx(p){ return X0 + p * (CW + GAP) + CW / 2; }
+  function cxLeft(p){ return X0 + p * (CW + GAP); }
+  function bitsOf(v){ var a = []; for (var p = 0; p < W; p++) a.push((v >> (W - 1 - p)) & 1); return a; }
+  function valOf(a){ var v = 0; a.forEach(function(b){ v = v * 2 + b; }); return v; }
+  function bitStr(a){ return a.join(''); }
+
+  // out[q] = bits[q + n] for a left shift; out[q] = bits[q - n] for a right shift; vacated slots become 0
+  function shifted(a, n, dir){
+    return a.map(function(_, q){
+      var src = q - dir * n;
+      return (src >= 0 && src < W) ? a[src] : 0;
+    });
+  }
+
+  function cells(bits, y, cls, animate){
+    var s = '';
+    bits.forEach(function(b, p){
+      var extra = cls ? cls(p, b) : '';
+      s += '<g class="' + (animate ? 'newbit' : '') + '">' +
+        '<rect class="cellbit ' + extra + '" x="' + cxLeft(p) + '" y="' + y + '" width="' + CW + '" height="' + CH + '" rx="8" fill="var(--surface-2)" stroke="var(--ink-muted)" stroke-width="1.6"/>' +
+        '<text x="' + cx(p) + '" y="' + (y + 31) + '" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="20" font-weight="600" fill="var(--ink)">' + b + '</text>' +
+      '</g>';
+    });
+    return s;
+  }
+
+  function render(){
+    var m = MODES[mode];
+    var start = bitsOf(m.start);
+    var after = shifted(start, N, m.dir);
+    var s = stage;
+    var tag = m.label + ' $4, $4, ' + N;
+
+    document.getElementById('topLabel').textContent = 'before';
+    document.getElementById('botLabel').textContent = 'after';
+    document.getElementById('botLabel').setAttribute('opacity', s >= 2 ? 1 : 0);
+
+    // top row: the value before the shift
+    document.getElementById('topRow').innerHTML = cells(start, TOP, function(p){
+      if (s >= 1) {
+        var q = p + m.dir * N;
+        if (q < 0 || q >= W) return 'vac';
+      }
+      return '';
+    }, false);
+
+    // arrows: bit at p travels N places in direction dir
+    var arrows = '';
+    if (s >= 1) {
+      start.forEach(function(b, p){
+        var q = p + m.dir * N;
+        var x1 = cx(p), y1 = TOP + CH;
+        if (q >= 0 && q < W) {
+          arrows += '<path class="arrowp" pathLength="1" d="M' + x1 + ',' + y1 + ' C' + x1 + ',' + (y1 + 30) + ' ' + cx(q) + ',' + (BOT - 30) + ' ' + cx(q) + ',' + (BOT - 2) + '" stroke="var(--accent)" stroke-width="2" fill="none" marker-end="url(#shArr)"/>';
+        } else {
+          arrows += '<path class="arrowp lost" d="M' + x1 + ',' + y1 + ' L' + x1 + ',' + (BOT - 12) + '" stroke="var(--warn)" stroke-width="2" fill="none"/>' +
+                    '<text x="' + x1 + '" y="' + (BOT + 18) + '" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--warn)">lost</text>';
+        }
+      });
+    }
+    document.getElementById('arrows').innerHTML = arrows;
+
+    // bottom row: the value after the shift; vacated slots are 0s
+    var botHtml = '';
+    if (s >= 2) {
+      botHtml = cells(after, BOT, function(p){
+        if (s >= 2) {
+          var src = p - m.dir * N;
+          if (src < 0 || src >= W) return 'vac';
+        }
+        return s === 3 ? 'res' : '';
+      }, true);
+    }
+    document.getElementById('botRow').innerHTML = botHtml;
+
+    var readout = '';
+    if (s === 0) readout = 'binary ' + bitStr(start) + ' = ' + valOf(start);
+    else if (s === 1) readout = 'shifting ' + N + ' places ' + (m.dir < 0 ? 'left' : 'right');
+    else readout = 'binary ' + bitStr(after) + ' = ' + valOf(after);
+    document.getElementById('readout').textContent = readout;
+
+    document.getElementById('desc').textContent = m.desc[s];
+    document.getElementById('fields').innerHTML = m.fields;
+    document.getElementById('count').textContent = 'stage ' + s + ' / ' + N;
+    stepBtn.disabled = s >= N;
+    document.getElementById('tabSll').classList.toggle('on', mode === 'sll');
+    document.getElementById('tabSrl').classList.toggle('on', mode === 'srl');
+  }
+
+  document.getElementById('tabSll').addEventListener('click', function(){ mode = 'sll'; stage = 0; render(); });
+  document.getElementById('tabSrl').addEventListener('click', function(){ mode = 'srl'; stage = 0; render(); });
+  stepBtn.addEventListener('click', function(){ if (stage < N) { stage++; render(); } });
+  document.getElementById('resetBtn').addEventListener('click', function(){ stage = 0; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

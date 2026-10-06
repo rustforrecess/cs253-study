@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitwise AND, OR, and NOT</title>
+<meta name="description" content="Animated bit-by-bit AND, OR, and NOT with truth tables and MIPS instructions" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f5fb; --surface:#ffffff; --surface-2:#efecf7; --ink:#211f2e; --ink-muted:#615d78;
+    --border:#e0dced; --accent:#5b3fa0; --accent-soft:#ece6fa; --good:#1a7a5e; --good-soft:#e0f3ec;
+    --shadow: 0 1px 2px rgba(33,31,46,0.06), 0 8px 24px -12px rgba(33,31,46,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151220; --surface:#1d1930; --surface-2:#241f3a; --ink:#eae7f5; --ink-muted:#a49dc2;
+      --border:#332c54; --accent:#a68cf0; --accent-soft:#2c2450; --good:#5cc2a4; --good-soft:#173029;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.55;padding-inline:20px;}
+  .wrap{max-width:860px;margin:0 auto;padding-block:28px 60px;}
+  h1{font-family:'Fraunces',Georgia,serif;font-weight:650;font-size:clamp(1.5rem,4vw,2rem);margin:0 0 6px;}
+  .lede{color:var(--ink-muted);font-size:.98rem;margin:0 0 16px;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--surface-2);padding:.1em .4em;border-radius:4px;font-size:.9em;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px;}
+  .card svg{width:100%;height:auto;display:block;}
+  .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+  .controls button{font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .controls button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .controls button.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .controls button:disabled{opacity:.4;cursor:default;}
+  .count{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink-muted);}
+  .desc{background:var(--surface-2);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.93rem;min-height:2.8em;}
+  .mips{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--ink-muted);margin-top:12px;line-height:1.7;}
+  .mips b{color:var(--ink);font-weight:600;}
+  table{border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:.85rem;margin-top:8px;}
+  th,td{border:1px solid var(--border);padding:6px 14px;text-align:center;}
+  th{background:var(--surface-2);font-weight:600;}
+  tr.cur td{background:var(--accent-soft);font-weight:600;}
+  .cellbit{transition:fill .3s ease,stroke .3s ease;}
+  .cellbit.cur{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.6;}
+  .cellbit.res{fill:var(--good-soft);stroke:var(--good);}
+  .colbg{transition:opacity .3s ease;}
+  .newbit{animation:popIn .5s ease;transform-box:fill-box;transform-origin:50% 50%;}
+  @keyframes popIn{0%{transform:scale(.4);opacity:0;}60%{transform:scale(1.12);opacity:1;}100%{transform:scale(1);}}
+  .tablewrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bitwise AND, OR, and NOT</h1>
+  <p class="lede">Bitwise operations work on each bit position separately. Column 0 combines the leftmost bits of both operands, column 1 combines the next pair, and so on. No carries move between columns.</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button id="tabAnd" class="on">AND</button>
+      <button id="tabOr">OR</button>
+      <button id="tabXor">XOR</button>
+      <button id="tabNot">NOT</button>
+    </div>
+
+    <svg viewBox="0 0 680 270" id="bw-svg">
+      <text x="14" y="42" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink-muted)">A</text>
+      <text x="14" y="112" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink-muted)">B</text>
+      <text x="14" y="200" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink-muted)">result</text>
+      <g id="colBg"></g>
+      <g id="rowA"></g>
+      <g id="rowB"></g>
+      <g id="rowR"></g>
+      <text id="resReadout" x="340" y="258" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" fill="var(--ink)"></text>
+    </svg>
+
+    <div class="controls">
+      <button id="stepBtn" class="primary">Step column &rarr;</button>
+      <button id="resetBtn">Reset</button>
+      <span class="count" id="count">column 0 / 8</span>
+    </div>
+    <div class="desc" id="desc"></div>
+
+    <div class="tablewrap" style="margin-top:14px;">
+      <div>
+        <div class="count" style="margin-bottom:4px;">truth table for this column</div>
+        <table id="truth"></table>
+      </div>
+      <div class="mips" id="mips"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var W = 8, CW = 52, GAP = 12, X0 = 90;
+  var A = 0xCA, B = 0xA6; // 11001010 and 10100110
+  var OPS = {
+    and: { label: 'AND', fn: function(a, b){ return a & b; }, usesB: true,
+      mips: '<b>and $d, $s, $t</b>  (both bits 1 gives 1)' },
+    or:  { label: 'OR',  fn: function(a, b){ return a | b; }, usesB: true,
+      mips: '<b>or $d, $s, $t</b>  (either bit 1 gives 1)' },
+    xor: { label: 'XOR', fn: function(a, b){ return a ^ b; }, usesB: true,
+      mips: '<b>xor $d, $s, $t</b>  (bits differ gives 1, bits match gives 0)' },
+    not: { label: 'NOT', fn: function(a){ return (~a) & 1; }, usesB: false,
+      mips: 'The MIPS green card lists <b>NOT $d, $s</b> as a pseudo-instruction, written as <b>nor $d, $s, $zero</b>, because NOR with 0 is the complement.' }
+  };
+  var TABLE = {
+    and: [[0,0,0],[0,1,0],[1,0,0],[1,1,1]],
+    or:  [[0,0,0],[0,1,1],[1,0,1],[1,1,1]],
+    xor: [[0,0,0],[0,1,1],[1,0,1],[1,1,0]],
+    not: null
+  };
+
+  var op = 'and', stage = 0;
+  var stepBtn = document.getElementById('stepBtn');
+
+  function cxLeft(p){ return X0 + p * (CW + GAP); }
+  function cx(p){ return cxLeft(p) + CW / 2; }
+  function bitsOf(v){ var a = []; for (var p = 0; p < W; p++) a.push((v >> (W - 1 - p)) & 1); return a; }
+  function valOf(a){ var v = 0; a.forEach(function(b){ v = v * 2 + b; }); return v; }
+  function hex(v){ return '0x' + v.toString(16).toUpperCase().padStart(2, '0'); }
+
+  function cells(bits, y, opts){
+    var s = '';
+    bits.forEach(function(b, p){
+      var o = opts && opts[p] !== undefined ? opts[p] : '';
+      var cls = 'cellbit ' + o;
+      s += '<g class="' + (o === 'res' ? 'newbit' : '') + '">' +
+        '<rect class="' + cls + '" x="' + cxLeft(p) + '" y="' + y + '" width="' + CW + '" height="' + 50 + '" rx="8" fill="var(--surface-2)" stroke="var(--ink-muted)" stroke-width="1.6"/>' +
+        '<text x="' + cx(p) + '" y="' + (y + 31) + '" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="20" font-weight="600" fill="var(--ink)">' + (b === null ? '?' : b) + '</text>' +
+      '</g>';
+    });
+    return s;
+  }
+
+  function render(){
+    var o = OPS[op];
+    var a = bitsOf(A), b = bitsOf(B);
+    var r = a.map(function(x, p){ return o.fn(x, b[p]); });
+    var s = stage;
+
+    // column highlight behind the current pair (stage 0 to 7)
+    var colBg = '';
+    if (s < W) {
+      colBg = '<rect x="' + (cxLeft(s) - 6) + '" y="22" width="' + (CW + 12) + '" height="236" rx="10" fill="var(--accent-soft)" opacity="0.7"/>';
+    }
+    document.getElementById('colBg').innerHTML = colBg;
+
+    // operand rows
+    var aOpts = {}, bOpts = {}, rOpts = {};
+    for (var p = 0; p < W; p++) {
+      if (p === s) { aOpts[p] = 'cur'; bOpts[p] = 'cur'; }
+      if (p < s) rOpts[p] = 'res';
+      if (p === s) rOpts[p] = 'cur';
+    }
+    document.getElementById('rowA').innerHTML = cells(a, 20, aOpts);
+    document.getElementById('rowB').innerHTML = o.usesB ? cells(b, 90, bOpts) : '';
+    if (!o.usesB) {
+      document.getElementById('rowB').innerHTML = '<text x="' + (X0 + 4 * (CW + GAP) - 6) + '" y="122" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--ink-muted)">not used by NOT</text>';
+    }
+
+    // result row: only columns up to the current stage are filled in
+    var resBits = r.map(function(v, p){ return p < s ? v : null; });
+    document.getElementById('rowR').innerHTML = cells(resBits, 170, rOpts);
+
+    // readout
+    var shown = resBits.map(function(v){ return v === null ? '?' : v; }).join('');
+    var readout = 'result ' + (s === W ? bitsOf(0).length && r.join('') + ' = ' + valOf(r) + ' (' + hex(valOf(r)) + ')' : shown + ' so far');
+    document.getElementById('resReadout').textContent = readout;
+
+    // description for the current column
+    var desc;
+    if (s < W) {
+      var x = a[s];
+      if (o.usesB) {
+        desc = 'Column ' + s + ': A bit is ' + x + ', B bit is ' + b[s] + '. ' + o.label + ' of ' + x + ' and ' + b[s] + ' gives ' + r[s] + '.';
+        if (op === 'or') desc = 'Column ' + s + ': A bit is ' + x + ', B bit is ' + b[s] + '. OR of ' + x + ' and ' + b[s] + ' gives ' + r[s] + '.';
+        if (op === 'xor') desc = 'Column ' + s + ': A bit is ' + x + ', B bit is ' + b[s] + '. ' + (x === b[s] ? 'The bits match, so XOR gives 0.' : 'The bits differ, so XOR gives 1.');
+      } else {
+        desc = 'Column ' + s + ': A bit is ' + x + '. NOT flips it, giving ' + r[s] + '.';
+      }
+    } else {
+      desc = 'Done. Result = ' + valOf(r) + ' (' + hex(valOf(r)) + '). Each column was computed alone, so no carry moves between columns.';
+    }
+    document.getElementById('desc').textContent = desc;
+    document.getElementById('count').textContent = 'column ' + s + ' / ' + W;
+    stepBtn.disabled = s >= W;
+
+    // truth table with the current row highlighted
+    var t = document.getElementById('truth');
+    if (o.usesB) {
+      var rows = TABLE[op], html = '<tr><th>A</th><th>B</th><th>' + o.label + '</th></tr>';
+      var curA = s < W ? a[s] : -1, curB = s < W ? b[s] : -1;
+      rows.forEach(function(row){
+        var isCur = row[0] === curA && row[1] === curB;
+        html += '<tr class="' + (isCur ? 'cur' : '') + '"><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';
+      });
+      t.innerHTML = html;
+    } else {
+      var curN = s < W ? a[s] : -1;
+      var html2 = '<tr><th>A</th><th>NOT A</th></tr>';
+      [0,1].forEach(function(v){
+        html2 += '<tr class="' + (v === curN ? 'cur' : '') + '"><td>' + v + '</td><td>' + (1 - v) + '</td></tr>';
+      });
+      t.innerHTML = html2;
+    }
+
+    document.getElementById('mips').innerHTML = o.mips;
+    ['tabAnd','tabOr','tabXor','tabNot'].forEach(function(id, i){
+      document.getElementById(id).classList.toggle('on', ['and','or','xor','not'][i] === op);
+    });
+  }
+
+  function setOp(name){ op = name; stage = 0; render(); }
+  document.getElementById('tabAnd').addEventListener('click', function(){ setOp('and'); });
+  document.getElementById('tabOr').addEventListener('click', function(){ setOp('or'); });
+  document.getElementById('tabXor').addEventListener('click', function(){ setOp('xor'); });
+  document.getElementById('tabNot').addEventListener('click', function(){ setOp('not'); });
+  stepBtn.addEventListener('click', function(){ if (stage < W) { stage++; render(); } });
+  document.getElementById('resetBtn').addEventListener('click', function(){ stage = 0; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

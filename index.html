@@ -26,12 +26,22 @@
   li a{display:block;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--accent);text-decoration:none;font-weight:600;}
   li a:hover{background:var(--accent-soft);}
   li span{display:block;color:var(--ink-muted);font-weight:400;font-size:.9rem;margin-top:2px;}
+  .qr{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;flex-wrap:wrap;}
+  .qr img, .qr canvas{display:block;border-radius:6px;background:#fff;padding:6px;}
+  .qr p{margin:0;font-size:.9rem;color:var(--ink-muted);}
+  .qr code{display:block;margin-top:4px;color:var(--ink);word-break:break-all;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>CS253 Study Pages</h1>
   <p class="lede">Start with the architecture study guide. The other pages are linked from it, and each one also works on its own.</p>
+
+  <div class="qr">
+    <div id="qrcode"></div>
+    <p>Scan with a phone camera to open this page.<code>https://rustforrecess.github.io/cs253-study/</code></p>
+  </div>
+
   <ul>
     <li><a href="architecture-study-guide.html">Architecture study guide<span>Number bases, two's complement, instructions, shifts, bitwise operations, Horner's method, overflow, and the practice game</span></a></li>
     <li><a href="instruction-parts.html">Parts of a machine instruction<span>addu $10, $9, $8 split into fields and traced through the ALU</span></a></li>
@@ -41,5 +51,15 @@
     <li><a href="mips-sandbox.html">MIPS sandbox<span>Write or pick a program and step through it one instruction at a time</span></a></li>
   </ul>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  new QRCode(document.getElementById("qrcode"), {
+    text: "https://rustforrecess.github.io/cs253-study/",
+    width: 140,
+    height: 140,
+    colorDark: "#211f2e",
+    colorLight: "#ffffff"
+  });
+</script>
 </body>
 </html>
